@@ -2,18 +2,18 @@
 Development informations
 ========================
 
-:TODO:
-Ecrire la doc !
+How it work ?
+=============
 
-How it UPS status found ?
-=========================
-
-The plugin just use the `NUT server functions <http://www.networkupstools.org/docs/developer-guide.chunked/>`_.
+The plugin use clients who send message through operator service.
+Operator could be any web service or hardware ``(in future stuff)``
+Clients service are register by plugin and communicat with they by internal code.
+Header defined in plugin configuration is added at the top of message.
 
 xPL messages
 ============
 
-xPL messages are according to `xPL Project UPS specification <http://xplproject.org.uk/wiki/index.php?title=Schema_-_UPS.BASIC>`_
+xPL messages are according to `xPL Project send message specification <http://xplproject.org.uk/wiki/index.php/Schema_-_SENDMSG.BASIC>`_
 
 xpl-stat
 --------
@@ -23,360 +23,245 @@ n/a
 xpl-trig
 --------
 
-The **ups.basic** message is used
-*********************************
+The **sendmsg.confirm** message is used
+***************************************
 ::
 
     xpl-trig
     {
     ...
     }
-    ups.basic
+    sendmsg.confirm
     {
-    device=<ups name declared on domogik device created>
-    status=<one of these values : mains, battery, unknown>
-    event=<last event : onmains, onbattery, battlow,......>
-    }
-
-The **sensor.basic** message is used for additionnal data
-*********************************************************
-::
-
-    xpl-trig
-    {
-    ...
-    }
-    sensor.basic
-    {
-    device=<ups name declared on domogik device created>
-    input-voltage=<value>
-    output-voltage=<value>
-    battery-voltage=<value>
-    battery-charge==<value>
+    to=<Email address, User ID or Phone Number>
+    status=<Status info>
+    [error=<Optional error Message>]
     }
 
 xpl-cmnd
 --------
-n/a
+::
 
-NUT driver compatibility
-========================
+    xpl-cmnd
+    {
+    ...
+    }
+    sendmsg.basic
+    {
+    to=<Email address, User ID or Phone Number>
+    body=<Message body>
+    [title=<Optional message title >]
+    [priority=<Optional number of massage priority ( 0 : no priority - 1 : info - 2 : warning - 3 : alert)>]
+    [url=<Optional URL to pass along, that would give more information about the message>]
+    [image=<Optional bitmap URL to pass along>]
+    }
 
-Plugin need driver device class for working with specific UPS.
+Existing clients service.
+=========================
 
-Existing drivers device.
-------------------------
+- Sending SMS WEB:
+   Send SMS using web service phone operator, actually there is 4 french operators handled :
+   Can use just xPL optional value ``title``
 
-- Basic:
-   Must work with any NUT driver but handle only status and events ``onmains``, ``onbattery``, ``batterylow``, ``comm_ok`` and ``comm_lost``
-   If NUT server return ``battery.charge`` driver can handle it.
+    - Bouygues Telecom : file ``bin/smsweb_bouygues.py`` who use web service on
+        http://www.mobile.service.bbox.bouyguestelecom.fr/services/SMSIHD/sendSMS.phtm
 
-- Blazer_USB:
-    Handle all basic and if available by NUT server:
-    
-        ``battery.charge`` calculat, input-output voltage status , input frequence status, output current status and temperature status
+    - Free mobile : file ``bin/smsweb_freemobile.py`` who use web service on
+        https://smsapi.free-mobile.fr/sendmsg?
+
+    - Orange : file ``bin/smsweb_orange.py`` who use web service on
+        http://smsmms1.orange.fr/C/Sms/sms_write.php
+
+    - SFR : file ``bin/smsweb_sfr.py`` who use web service on
+        http://www.sfr.fr/xmscomposer/index.html?todo=compose
+
+- Sending Newtifry for Android:
+   Send notification using web service phone `Newtifry API <https://newtifry.appspot.com/page/api>`_
+   Can use all xPL optional value ``title``, ``priority``, ``url``, ``image``
 
 Add developement NUT driver compatibility
 -----------------------------------------
 
-Plugin offer simple way to add new driver device.
+Plugin offer way to add new client service.
 
-File ``lib/nutdevices.py`` contains a ``DeciveBase`` python class who handle basic methodes.
-You create a new class inherit this base class and overwriting some methodes to get NUT driver compatibility.
-You just have to add new driver device class reference in ``createDevice`` methode. ::
+Editin JSON file plugin
+***********************
 
-    def createDevice(data):
-        """ Create a device depending of 'driver.name' given by data dict.
-            - Developer : add your python class derived from DeviceBase class."""
-        if data.has_key('driver.name') :
-            if data['driver.name'] == 'blazer_usb' : return Blazer_USB(data)
-              # Just add next line
-            elif data['driver.name'] == 'My_new_driver' : return My_New_Device(data)
-            else : return DeviceBase(data)
-        else : return DeviceBase(data)
+Some adding must be necessary to do in info.json file:
 
-Have a look to `Network UPS Tools <http://www.networkupstools.org/>`_ and get details informations on Driver section of `User manual pages <http://www.networkupstools.org/docs/man/index.html#User_man>`_
+- For an SMS web service just add your operator id in ``parameters``, ``operator``, key ``choices`` of ``instance_types``, instance ``smsweb.instance``::
 
-Getting UPS variables available
+    ......
+    "smsweb.instance" : {
+            "description" : "Send SMS using web service phone operator.",
+            "id" : "smsweb.instance",
+            "name" : "SMS operator web service",
+            "commands" : ["send_msg"],
+            "sensors" : ["msg_status", "error_send"],
+            "parameters" : [{
+                    "key" : "to",
+					"xpl": true,
+                    "description" : "Phone number to send SMS.",
+                    "type" : "string"
+                },{
+                    "key" : "operator",
+					"xpl": false,
+                    "description" : "Operator service.",
+                    "type" : "enum",
+                    "choices" : {
+                        "Bouygues_sms-web" : "Bouygues service",
+                        "Freemobile_sms-web" : "Freemobile service",
+                        "Orange_sms-web" : "Orange service",
+                        "SFR_sms-web" : "SFR service", # add coma
+                        "My_NEW_OPERATOR" : "NEW service"  # add ligne
+                        }
+                },{
+                    "key" : "login",
+					"xpl": false,
+                    "description" : "User login service.",
+                    "type" : "string"
+                },{
+                    "key" : "pwd",
+					"xpl": false,
+                    "description" : "User password service.",
+                    "type" : "string"
+                }
+            ]
+        },
+        .....
+
+- For a new servcie or hardware, create your own instance_type ::
+
+    "mynewservice.instance" : {
+            "description" : "A simple description of service.",
+            "id" : "mynewservice.instance",
+            "name" : "Name service",
+            "commands" : ["send_extendmsg or send_msg"], # chose type of message
+            "sensors" : ["msg_status", "error_send"],
+            "parameters" : [{
+                    "key" : "to",                        # keep this key, identification of recipient
+					"xpl": true,
+                    "description" : "A simple description of recipient.",
+                    "type" : "string"
+                },{
+                    "key" : "key1",                     # a optional key needed by service, like user/login/....
+					"xpl": false,                       # set to false for don't use in xPL message
+                    "description" : "A simple description of function.",
+                    "type" : "string"
+                },{
+                    "key" : "key2",                     # a optional key needed by service, like password/....
+					"xpl": false,                       # set to false for don't use in xPL message
+                    "description" : "A simple description of function.",
+                    "type" : "string"
+                },{
+                    .....
+                }
+            ]
+        }
+    },
+
+Editing clients_devices.py file
 *******************************
 
-- Use `clients commands upsc <http://www.networkupstools.org/docs/man/upsc.html>`_ of Network UPS Tools to get all variables available :
-    Example : ::
+File ``lib/clients_devices.py`` contains a ``BaseClientService`` python class who handle basic methodes.
+You create a new class inherit this base class and overwriting some methodes to get acces of this new service or hardware.
+There is 3 thinks to do in this file :
 
-        $ /bin/upsc MyUPS@localhost
-        battery.voltage.nominal: 12.0
-        battery.voltage: 13.60
-        beeper.status: enabled
-        device.type: ups
-        driver.version.internal: 0.04
-        driver.name: blazer_usb
-        driver.version: 2.6.3
-        driver.parameter.pollinterval: 2
-        driver.parameter.port: /dev/upsZ3
-        driver.parameter.productid: 5161
-        driver.parameter.vendorid: 0665
-        input.voltage.nominal: 230
-        input.voltage.fault: 240.2
-        input.voltage: 240.2
-        input.current.nominal: 2.0
-        input.frequency.nominal: 50
-        input.frequency: 49.9
-        output.voltage: 240.2
-        ups.type: offline
-        ups.vendorid: 0665
-        ups.delay.shutdown: 30
-        ups.productid: 5161
-        ups.delay.start: 180
-        ups.status: OL
+- 1st : Add your new operator id in OPERATORS_SERVICE global variable.
+    This id is the same than JSON file
 
-- Or using plugin tools ``lib/nutdevices.py`` :
-    Simple set your own parameters on __main__ section of ``lib/nutdevices.py`` file. ::
-
-        if __name__ == "__main__":
-              # Set  upsaddr,  upsport and upsname depending on your config
-            upsaddr = <UPS server IP >
-            upsport = <UPS server port (generaly= 3493)>
-            upsname = <UPS name>
-
-    Run python file ``lib/nutdevices.py`` and you get appropriate informations. ::
-
-        $ python nutsockclient.py
-         +++ Internal NUTSocketClient created +++
-        Client connected to Z3_SERVER
-
-        *** getNUTVersion
-        {'cmd': 'VER', 'data': '2.6.3', 'error': ''}
-
-        *** getNUTNetworkVersion
-        {'cmd': 'NETVER', 'error': 'NUT version to old (2.6.3), NETVER function not handle, Update NUT lib >= 2.6.4'}
-
-        *** getNUTHelp
-        Commands: HELP VER GET LIST SET INSTCMD LOGIN LOGOUT USERNAME PASSWORD STARTTLS
-
-        {}
-
-        *** getUPSList
-        {'cmd': 'LIST UPS', 'data': {'Z3_SERVER': 'Server Linux Internet'}, 'error': ''}
-
-        *** getUPSVars
-        {'cmd': 'LIST VAR',
-            'data': {
-                'input.voltage.nominal': '230', 'beeper.status': 'enabled', 'input.voltage.fault': '238.4', 'device.type': 'ups',
-                'driver.version.internal': '0.04', 'input.voltage': '238.4', 'ups.type': 'offline', 'input.current.nominal': '2.0',
-                'ups.vendorid': '0665', 'driver.name': 'blazer_usb', 'ups.delay.shutdown': '30', 'output.voltage': '238.4',
-                'ups.productid': '5161', 'ups.delay.start': '180', 'driver.version': '2.6.3', 'input.frequency.nominal': '50',
-                'battery.voltage.nominal': '12.0', 'driver.parameter.pollinterval': '2', 'driver.parameter.port': '/dev/upsZ3',
-                'battery.voltage': '13.60', 'driver.parameter.productid': '5161', 'ups.status': 'OL', 'input.frequency': '49.9',
-                'driver.parameter.vendorid': '0665'
-                },
-         'ups': 'Z3_SERVER', 'error': ''}
-
-        *** getUPSRWVars
-        {'cmd': 'LIST RW', 'data': {}, 'ups': 'Z3_SERVER', 'error': ''}
-
-        *** getUPSCommands
-        {'cmd': 'LIST CMD',
-            'data': [
-                'beeper.toggle', 'load.off', 'load.on', 'shutdown.return', 'shutdown.stayoff', 'shutdown.stop',
-                'test.battery.start', 'test.battery.start.deep', 'test.battery.start.quick', 'test.battery.stop'
-                ],
-         'ups': 'Z3_SERVER', 'error': ''}
-
-        *** getUPSListClients
-        {'cmd': 'LIST CLIENT', 'error': 'NUT version to old (2.6.3), LIST CLIENT function not handle, Update NUT lib >= 2.6.4'}
-
-        *** getUPSVar
-        {'var': 'ups.status', 'cmd': 'GET VAR', 'ups': 'Z3_SERVER', 'value': 'OL', 'error': ''}
-
-        *** getUPSNumLogin
-        {'cmd': 'NUMLOGINS', 'data': '2', 'error': ''}
-        Terminated
-         --- Internal NUTSocketClient deleted ---
-
-
-Creating new Driver device class
-********************************
 ::
 
-    class My_New_Device(DeviceBase):  # simply new class declaration
-        def checkInputVoltage(self):  # overwrite methodes class
+    OPERATORS_SERVICE =  ['SFR_sms-web', 'Orange_sms-web', 'Bouygues_sms-web', 'Freemobile_sms-web', 'Newtifry', My_NEW_OPERATOR]
+
+
+- 2nd : You have to add new client device class reference in ``createDevice`` methode. ::
+
+    def createDevice(params, log = None):
+        """ Create a device depending of 'driver.name' given by data dict.
+            - Developer : add your python class derived from DeviceBase class."""
+        ....
+        elif params['operator'] == 'My_new_service' :
+            from domogik_packages.plugin_notify.lib.mynewcodefile import MyNewClient
+        newOperator = MyNewClient(params,  log)
+        ....
+
+- 3rd : If you have ceated a new instance_type, you have to add new client getting specifique parameters in ``GetInstanceParams`` methode. ::
+
+    def GetInstanceParams(xplPlugin, instance):
+        """ Return all internal parameters depending of instance_type.
+            - Developer : add your instance_type proper parameters
+                @param xplPlugin : XplPlugin base class reference for "get_parameter" and "get_parameter_for_feature"" methods access.
+                    type : object class XplPlugin
+                @param instance :  domogik device data.
+                    type : dict
+                @return : parameters for creating or update ClientService object.
+                        Value must contain at least keys :
+                            - 'operator' = Selected from OPERATORS_SERVICE
+                            - 'to' = Client reference, the same as xPL key 'to'
+                    type : dict
+        """
+        ...
+        elif instance['device_type_id'] == 'newtifry.instance':
+            operator = 'My_NEW_OPERATOR'
+            id = xplPlugin.get_parameter_for_feature(instance, 'xpl_stats',  'xPL_ack-msg',  'to')  # keep this line
+            valueKey1 = xplPlugin.get_parameter(instance, 'key1')                                   # Get your new instance paramaters
+            valuekey2 = xplPlugin.get_parameter(instance, 'key2')                                   # Get your new instance paramaters
+            if operator and instance["name"] and id and key1 :                                      # check for none optional parameters
+                    # Build a dict with parameters
+                params = {'name': instance["name"] , 'operator' : operator, 'to' : id, 'key1' : valueKey1, key2 : valuekey2}
+                return params                                                                       # return your own parameters
+        ...
+
+Creating new client class
+*************************
+::
+
+    class My_New_Client(BaseClientService):  # simply new class declaration
+        def send(self, message):  # overwrite methodes class
         ......
 
-Data format who must be return by methods
-*****************************************
+Overwrite ``update`` methode
+****************************
+This method is called by plugin to update proper parameters, so set your own parameters in::
 
-By calling source class method ``self.checkStatus()`` you get DATA_TYPE_RETURN value.
-DATA_TYPE_RETURN is a dict type with keys. ::
+    def update(self,  params):
+        """ Create or update internal data, must be overwrited.
+            @param params :  domogik type. Come from GetInstanceParams method.
+                type : dict
+            @param get_parameter : XplPlugin.get_parameter method.
+                type : methode (device, key)
+        """
+        self.to = params['to']                # keep this line
+        self.key1 = params['key1']            # your parameter
+        self.key2 = params['key2'] if 'key2' in params else None # your parameter
 
-    DATA_TYPE_RETURN :
+Overwrite ``send`` methode
+****************************
+This method is called by plugin for sending message on service, She must return a dict with format :
+
+::
+
     {
-        'Modify' : True/False, # if the value change you must set to True.
-        'xPLData' : {  # Here all value who must transmit to xPL message.
-            'status' : <'mains' or 'battery', or 'unknown'>
-            'event' : <All event define in XPL_Events>
-        }
+        'status' : <A simple text to say sended or not>,
+        'error' : <Error cause or empty ('') if no error>
     }
 
-Use ``self.handleXplEvent`` to set XPL_Events status at True/False.
-    This method :
-        - Return a tuple with a boolean and a string for event key of DATA_TYPE_RETURN.
-        
-        - Manage an XPL_Event retention for some XPL Events values.
-    
-        - Ret others depending XPL_Events status of new event, Ex:
+::
 
-            if input_voltage_low' set to True
+    def send(self, message):
+        """ Send message
+            @param message : message dict data contain at least keys:
+                - 'to' : recipient of the message
+                - 'header' : header for message set in plugin configuration
+                - 'body" : message
+                - extra key defined in 'command' json declaration like 'title', priority', ....
+            @return : dict = {'status' : <Status info>, 'error' : <Error Message>}
+        """
+        ...
+        # write your own code for format message and send it.
+        ...
+        if message_Is_Sended : return {'status': 'Message sended :)', 'error': ''}
+        else return {'status': 'Message not sended :(', 'error': 'Server nor response .....'}
 
-            'input_voltage_high' must set to False
 
-            'input_voltage_ok' must set to False
-       
-    How to use it : ::
-    
-        ....
-        retval = self.checkStatus()
-        retVal['modify'], retVal['xPLData']['event'] = self.handleXPL_Events(< an XPL_Events>, True/False)
-
-Dependency XPL_Events status
-****************************
-
-XPL_Events are groups in dependencies status, if an item change others items must change.
-Developer has no need to handle dependencies, ``self.handleXplEvent`` method handle them.
-It's just for information.
-
-- On line status:
-    'onmains' => The UPS has begun operating on mains power
-
-    'onbattery' => The UPS has begun operating on battery power
-
-- Battery status:
-    'battlow' => The UPS battery is low
-
-    'battfull' => The UPS battery is fully charged
-
-- Battery test status:
-    'bti' => Battery test initiated
-
-    'btp' => Battery Test Passed
-
-    'btf' => Battery Test Failed
-
-- UPS server communucation status:
-    'comms_lost' => The host has lost communication with the UPS
-
-    'comms_ok' => Communication with the UPS has been restored
-
-- Input frequency status:
-    'input_freq_error' => The input frequency is out of range
-
-    'input_freq_ok' => The input frequency has returned from an error condition
-
-- Input voltage status:
-    'input_voltage_high' => The input voltage is too high
-
-    'input_voltage_low' => The input voltage is too low
-
-    'input_voltage_ok' => The input voltage is OK following a previously "too low" or "too high" state
-
-- Output voltage status:
-    'output_voltage_high' => The UPS output voltage is too high
-
-    'output_voltage_low' => THe UPS output voltage is too low
-
-    'output_voltage_ok' => The UPS output voltage has returned to normal following a "too high" or "too low" condition.
-
-- Output status:
-    'output_overload' => The UPS output is in overload
-
-    'output_ok' => The UPS output has returned from overload
-
-- Temperature status:
-    'temp_high' => The UPS temperature is too high
-
-    'temp_ok' => The UPS temperature has returned from an over-temperature condition
-
-Overwrited methods
-******************
-
-- getBatteryCharge:
-    You can overwrite this method but it is essential to call source method at first, Because if NUT server has is own level it's probably the better.
-
-    Overwriting structure: ::
-
-        def getBatteryCharge(self):
-            charge = DeviceBase.getBatteryCharge(self)
-            if charge: return charge
-              #.... Your new code in case of none 'battery.charge' handle by NUT server ....
-            return charge # type float
-
-- checkAll:
-    Check All UPS stuff and return they values in DATA_TYPE_RETURN list.
-
-    This method work with DeviceBase class, overwrite it only if new check method is necessary. Otherwise overwrite existing methods.
-
-    You can overwrite this method but it is essential to call source method at first.
-
-    Overwrite could be necessary only for new check, otherwise overwrite existing methods.
-
-    Overwriting structure: ::
-
-        def checkAll(self):
-            data = DeviceBase.checkAll(self)
-            data = data.append(self.Your_New_Check())
-            .....
-            return data
-
-- checkInputVoltage:
-    Source method do nothing and return None.
-    You must overwrite it with status calculate to return event ``input_voltage_low``, ``input_voltage_high``, ``input_voltage_ok`` in format DATA_TYPE_RETURN
-
-    Overwriting example: ::
-
-        def checkInputVoltage(self):
-              # Check if key exist in UPS vars
-            if self._vars.has_key('input.voltage.nominal') :
-                  # Calculat range voltage status
-                high = self._vars['input.voltage.nominal'] * 1.06
-                low = self._vars['input.voltage.nominal'] * 0.94
-            else : # Return None to report not handling UPS event
-                return None
-              # Check if key exist in UPS vars
-            if self._vars.has_key('input.voltage') :
-                  # Get UPS status in DATA_TYPE_RETURN format
-                retVal = self.checkStatus()
-                  # Test voltage status
-                if self._vars['input.voltage'] >= high :
-                      # Set 'Modify' and XPL_Events DATA_TYPE_RETURN format
-                    retVal['modify'], retVal['xPLData']['event'] = self.handleXPL_Events('input_voltage_high',  True)
-                elif self._vars['input.voltage'] <= low :
-                        # Set 'Modify' and XPL_Events DATA_TYPE_RETURN format
-                    retVal['modify'], retVal['xPLData']['event'] = self.handleXPL_Events('input_voltage_low',  True)
-                else :
-                        # Set 'Modify' and XPL_Events DATA_TYPE_RETURN format
-                    retVal['modify'], retVal['xPLData']['event'] = self.handleXPL_Events('input_voltage_ok',  True)
-                return retVal # Return DATA_TYPE_RETURN format
-            return None # Return None to report not handling UPS event
-
-- checkInputFreq:
-    Source method do nothing and return None.
-    You must overwrite it with status calculate to return event ``input_freq_error``, ``input_freq_ok`` in format DATA_TYPE_RETURN
-
-    Overwriting structure :  same principle than checkInputVoltage
-
-- checkOutputVoltage:
-    Source method do nothing and return None.
-    You must overwrite it with status calculate to return event ``ouput_voltage_low``, ``output_voltage_high``, ``output_voltage_ok`` in format DATA_TYPE_RETURN
-
-    Overwriting structure :  same principle than checkInputVoltage
-
-- checkOutput:
-    Source method do nothing and return None.
-    You must overwrite it with status calculate to return event ``output_overload``, ``output_ok`` in format DATA_TYPE_RETURN
-
-    Overwriting structure :  same principle than checkInputVoltage
-
-- checkTemperature:
-    Source method do nothing and return None.
-    You must overwrite it with status calculate to return event ``temp_high``, ``temp_ok`` in format DATA_TYPE_RETURN
-
-    Overwriting structure :  same principle than checkInputVoltage

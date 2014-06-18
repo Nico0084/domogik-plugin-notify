@@ -91,7 +91,7 @@ def GetInstanceParams(xplPlugin, instance):
         backend = xplPlugin.get_parameter(instance, 'backend')
         defaulttitle = xplPlugin.get_parameter(instance, 'defaulttitle')
         if operator and instance["name"] and id and sourcekey :
-            params = {'name': instance["name"] , 'operator' : operator, 'to' : id, 'sourcekey' : sourcekey, 'backend': backend,'defaulttitle' : defaulttitle,}
+            params = {'name': instance["name"] , 'operator' : operator, 'to' : id, 'sourcekey' : sourcekey, 'backend': backend,'defaulttitle' : defaulttitle}
             return params
     return None
 

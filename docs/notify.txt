@@ -41,7 +41,7 @@ In Domogik administration section, go to client plugin-nutserve details page.
 +----------------+----------------------+-------------------------------------------------------------------------------+
 | msg_header     | Domogik notification | Define header of all messages.                                                |
 +----------------+----------------------+-------------------------------------------------------------------------------+
-| send_at_start  | true                 | Send a notification message to all notify clients at starting plugin          |
+| send_at_start  | false                | Send a notification message to all notify clients at starting plugin          |
 +----------------+----------------------+-------------------------------------------------------------------------------+
 
 
@@ -52,7 +52,7 @@ In clients page of admin UI, go to **plugin-notify-<your_host_domogik>**, select
 Chose one way creation by product or instance type.
 
 Instance-type : smsweb.instance
-********************************
+*******************************
 
 +-------------------+-------------------+------------------------------------------------------------------------------+
 | Key               | Example           | Description                                                                  |
@@ -61,7 +61,7 @@ Instance-type : smsweb.instance
 +-------------------+-------------------+------------------------------------------------------------------------------+
 | Description       | What you want     | A short descriptionn for this device.                                        |
 +-------------------+-------------------+------------------------------------------------------------------------------+
-| Global to         | My_UPS            | Same name of UPS name in ups.conf file.                                      |
+| Global to         | My Phone number   | Phone number to send SMS.                                                    |
 +-------------------+-------------------+------------------------------------------------------------------------------+
 | Global operator   | Freemobile service| Choice :                                                                     |
 |                   |                   |   - Bouygues service                                                         |
@@ -69,9 +69,31 @@ Instance-type : smsweb.instance
 |                   |                   |   - Orange service.                                                          |
 |                   |                   |   - SFR service.                                                             |
 +-------------------+-------------------+------------------------------------------------------------------------------+
-| Global login      | My_UPS            | User login service.                                                          |
+| Global login      | My user login     | User login service.                                                          |
 +-------------------+-------------------+------------------------------------------------------------------------------+
+| Global pwd        | My password       | User password service.                                                       |
 +-------------------+-------------------+------------------------------------------------------------------------------+
-| Global pwd        | My_UPS            | User password service.                                                       |
-+-------------------+-------------------+------------------------------------------------------------------------------+
+
+Instance-type : newtifry.instance
+*********************************
+
+Configure your `Newtifry acces <https://newtifry.appspot.com/page/api>`_ 
+
++--------------------+-------------------+-----------------------------------------------------------------------------+
+| Key                | Example           | Description                                                                 |
++====================+===================+=============================================================================+
+| Device             | My phone id       | The display name for this device.                                           |
++--------------------+-------------------+-----------------------------------------------------------------------------+
+| Description        | What you want     | A short descriptionn for this device.                                       |
++--------------------+-------------------+-----------------------------------------------------------------------------+
+| Global to          | My Newtifry title | Source title set in Newtify config.                                         |
++--------------------+-------------------+-----------------------------------------------------------------------------+
+| Global backend     | backend service   | BACKEND of newtifry server.                                                 |
+|                    |                   | If not set use default : https://newtifry.appspot.com/newtifry              |
+|                    |                   | Otherwise give your own server adress.                                      |
++--------------------+-------------------+-----------------------------------------------------------------------------+
+| Global sourcekey   | My source key     | 32bits source key generate by Newtify..                                     |
++--------------------+-------------------+-----------------------------------------------------------------------------+
+| Global defaulttitle| My title          | Default title, if not set by xPL message.                                   |
++--------------------+-------------------+-----------------------------------------------------------------------------+
 
