@@ -1,0 +1,5 @@
+0.1.2
+Initial version from domogik 0.3 plugin
+0.2a0
+Fusion of sms and apushnot plugin
+domogik 0.4 upgrade, add freemobile operator and Newtifry for android.

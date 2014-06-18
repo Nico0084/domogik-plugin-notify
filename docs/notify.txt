@@ -1,0 +1,77 @@
+====================
+Plugin documentation
+====================
+
+.. |icon| image:: icon.png
+    :width: 64px
+
+|icon|
+
+Last change
+===========
+New instructions to apply changes from immediatly previous version.
+
+- 0.2a0 : (18-06-2014) First published version for domogik 0.4
+    - Target :
+    - Change log :
+        - Update doc
+
+- `Previous change <changelog.html>`_
+
+Purpose
+=======
+This Domogik plugin send notification message through services that could SMS (from web), `Newtifry for Android <http://www.networkupstools.org/>`_.
+
+Create a socket connection with NUT to get UPS informations and format them to xPL format according to `xPL_project <http://xplproject.org.uk/wiki/index.php/Schema_-_SENDMSG.BASIC>`_ specifications.
+
+Sensors values for ack sended notification send to domogik device.
+
+Offer a simply class developpement to add service.
+ 
+Plugin configuration
+====================
+Configuration
+-------------
+In Domogik administration section, go to client plugin-nutserve details page.
+
++----------------+----------------------+-------------------------------------------------------------------------------+
+|Key             | Default value        | Description                                                                   |
++================+======================+===============================================================================+
+| startup-plugin | false                | Automatically start plugin at Domogik startup                                 |
++----------------+----------------------+-------------------------------------------------------------------------------+
+| msg_header     | Domogik notification | Define header of all messages.                                                |
++----------------+----------------------+-------------------------------------------------------------------------------+
+| send_at_start  | true                 | Send a notification message to all notify clients at starting plugin          |
++----------------+----------------------+-------------------------------------------------------------------------------+
+
+
+Creating devices for SMS Client
+-------------------------------
+In clients page of admin UI, go to **plugin-notify-<your_host_domogik>**, select tab **"Devices"**, **"New"** to create your devices.
+
+Chose one way creation by product or instance type.
+
+Instance-type : smsweb.instance
+********************************
+
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Key               | Example           | Description                                                                  |
++===================+===================+==============================================================================+
+| Device            | My phone id       | The display name for this device.                                            |
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Description       | What you want     | A short descriptionn for this device.                                        |
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Global to         | My_UPS            | Same name of UPS name in ups.conf file.                                      |
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Global operator   | Freemobile service| Choice :                                                                     |
+|                   |                   |   - Bouygues service                                                         |
+|                   |                   |   - Freemobile service.                                                      |
+|                   |                   |   - Orange service.                                                          |
+|                   |                   |   - SFR service.                                                             |
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Global login      | My_UPS            | User login service.                                                          |
++-------------------+-------------------+------------------------------------------------------------------------------+
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Global pwd        | My_UPS            | User password service.                                                       |
++-------------------+-------------------+------------------------------------------------------------------------------+
+

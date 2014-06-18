@@ -1,0 +1,207 @@
+{
+    "products" : [{
+            "name" : "Operator SMS web service",
+            "id" : "SMSWeb_client",
+            "documentation" : "",
+            "type" : "smsweb.instance"
+        },{
+            "name" : "Newtifry web service for Android",
+            "id" : "Newtifry_client",
+            "documentation" : "https://newtifry.appspot.com/",
+            "type" : "newtifry.instance"
+        }
+        
+    ],
+    "configuration" : [{
+            "default": "Domogik notification", 
+            "description": "Define header of all messages.", 
+            "key": "msg_header", 
+            "name": "Message header",
+            "required": "no",
+            "type": "string"
+        },{
+            "default": false, 
+            "description": "Send a notification message to all notify clients at starting plugin.", 
+            "key": "send_at_start", 
+            "name": "send message at start up",
+            "required": "no",
+            "type": "boolean"
+        }],
+    "commands" : {
+        "send_msg" : {
+            "name" : "Send a message",
+            "return_confirmation" : true,
+            "parameters" : [{
+                    "key" : "body",
+                    "data_type" : "DT_String",
+                    "conversion" : ""
+                }
+            ],
+            "xpl_command" : "xPL_send_msg"
+        },
+        "send_extendmsg" : {
+            "name" : "Send a message with options",
+            "return_confirmation" : true,
+            "parameters" : [{
+                    "key" : "body",
+                    "data_type" : "DT_String",
+                    "conversion" : ""
+                },{
+                    "key" : "title",
+                    "data_type" : "DT_String",
+                    "conversion" : ""
+                },{
+                    "key" : "priority",
+                    "data_type" : "DT_Number",
+                    "conversion" : ""
+                },{
+                    "key" : "url",
+                    "data_type" : "DT_String",
+                    "conversion" : ""
+                },{
+                    "key" : "image",
+                    "data_type" : "DT_String",
+                    "conversion" : ""
+                }
+            ],
+            "xpl_command" : "xPL_send_msg"
+        }
+    },
+    "xpl_commands" : {
+        "xPL_send_msg" : {
+            "name" : "Send a message",
+            "schema" : "sendmsg.basic",
+            "xplstat_name" : "xPL_ack-msg",
+            "parameters" : {
+                "static" : [],
+                "device" : []
+            }
+        }
+    },
+    "sensors" : {
+        "msg_status" : {
+            "name" : "Message status send ",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+                }
+        },
+        "error_send" : {
+            "name" : "Message error send",
+            "incremental": false,
+            "data_type" : "DT_String",
+            "conversion" : "",
+            "history": {
+                    "store": true,
+                    "duplicate": false,
+                    "max": 0,
+                    "expire": 0,
+                    "round_value": 0
+                }
+        }
+    },
+    "xpl_stats" : {
+        "xPL_ack-msg" : {
+            "name" : "Message confirmation",
+            "schema" : "sendmsg.confirm",
+            "parameters" : {
+                "static" : [	],
+                "device" : [],
+                "dynamic" : [{
+                        "key" : "status",
+                        "ignore_values" : "",
+                        "sensor" : "msg_status"
+                    },{
+                        "key" : "error",
+                        "ignore_values" : "",
+                        "sensor" : "error_send"
+                    }
+                ]
+            }
+        }
+    },
+    "device_types" : {
+        "smsweb.instance" : {
+            "description" : "Send SMS using web service phone operator.",
+            "id" : "smsweb.instance",
+            "name" : "SMS operator web service",
+            "commands" : ["send_msg"],
+            "sensors" : ["msg_status", "error_send"],
+            "parameters" : [{
+                    "key" : "to",
+					"xpl": true,
+                    "description" : "Phone number to send SMS.",
+                    "type" : "string"
+                },{
+                    "key" : "operator",
+					"xpl": false,
+                    "description" : "Operator service.",
+                    "type" : "enum",
+                    "choices" : {
+                        "Bouygues_sms-web" : "Bouygues service",
+                        "Freemobile_sms-web" : "Freemobile service",
+                        "Orange_sms-web" : "Orange service",
+                        "SFR_sms-web" : "SFR service"
+                        }
+                },{
+                    "key" : "login",
+					"xpl": false,
+                    "description" : "User login service.",
+                    "type" : "string"
+                },{
+                    "key" : "pwd",
+					"xpl": false,
+                    "description" : "User password service.",
+                    "type" : "string"
+                }
+            ]
+        },
+        "newtifry.instance" : {
+            "description" : "Send message using newtifry web service for Android.",
+            "id" : "newtifry.instance",
+            "name" : "Newtifry web service",
+            "commands" : ["send_extendmsg"],
+            "sensors" : ["msg_status", "error_send"],
+            "parameters" : [{
+                    "key" : "to",
+					"xpl": true,
+                    "description" : "Source title set in Newtify config.",
+                    "type" : "string"
+                },{
+                    "key" : "backend",
+					"xpl": false,
+                    "description" : "BACKEND of newtifry server (default : https://newtifry.appspot.com/newtifry).",
+                    "type" : "string"
+                },{
+                    "key" : "sourcekey",
+					"xpl": false,
+                    "description" : "Source key generate by Newtify.",
+                    "type" : "string"
+                },{
+                    "key" : "defaulttitle",
+					"xpl": false,
+                    "description" : "Default title, if not set by xPL message.",
+                    "type" : "string"
+                }
+            ]
+        }
+    },
+    "identity" : {
+        "author" : "Nico0084",
+        "author_email" : "nico84dev at gmail.com",
+        "tags" : ["Telephony", "sms", "messaging", "notification"],
+        "dependencies" : [],
+        "description" : "Send notifications SMS on web service for french telephony providers : Orange, SFR, Bouygues, Freemobile",
+        "domogik_min_version" : "0.4.0",
+        "name" : "notify",
+         "type" : "plugin",
+        "version" : "0.2a0"
+    },
+    "json_version" : 2
+}
