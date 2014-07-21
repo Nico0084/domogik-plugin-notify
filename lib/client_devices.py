@@ -60,12 +60,12 @@ def createDevice(params, log = None):
         newOperator = Newtifry(params,  log)
     return newOperator
 
-def GetInstanceParams(xplPlugin, instance):
+def GetDeviceParams(xplPlugin, device):
     """ Return all internal parameters depending of instance_type.
         - Developer : add your instance_type proper parameters
             @param xplPlugin : XplPlugin base class reference for "get_parameter" and "get_parameter_for_feature"" methods access.
                 type : object class XplPlugin
-            @param instance :  domogik device data.
+            @param device :  domogik device data.
                 type : dict
             @return : parameters for creating or update ClientService object.
                     Value must contain at least keys :
@@ -73,25 +73,23 @@ def GetInstanceParams(xplPlugin, instance):
                         - 'to' = Client reference, the same as xPL key 'to'
                 type : dict
     """
-    print "Extract parameters from instance : \n{0}".format(instance)
-    if instance['device_type_id'] == 'smsweb.instance':
-        operator = xplPlugin.get_parameter(instance, 'operator')
-        id = xplPlugin.get_parameter_for_feature(instance, 'xpl_stats',  'xPL_ack-msg',  'to')
-    #        id = xplPlugin.get_parameter_for_feature(instance, 'xpl_commands',  'xPL_send_msg',  'to')
-        login = xplPlugin.get_parameter(instance, 'login')
-        pwd = xplPlugin.get_parameter(instance, 'pwd')
-        if operator and instance["name"] and id and login and pwd :
-            params = {'name': instance["name"], 'operator' : operator,  'to' : id,  'login' : login,  'pwd': pwd}
+    print "Extract parameters from device : \n{0}".format(device)
+    if device['device_type_id'] == 'notify.smsweb':
+        operator = xplPlugin.get_parameter(device, 'operator')
+        id = xplPlugin.get_parameter_for_feature(device, 'xpl_stats',  'xPL_ack-msg',  'to')
+        login = xplPlugin.get_parameter(device, 'login')
+        pwd = xplPlugin.get_parameter(device, 'pwd')
+        if operator and device["name"] and id and login and pwd :
+            params = {'name': device["name"], 'operator' : operator,  'to' : id,  'login' : login,  'pwd': pwd}
             return params
-    if instance['device_type_id'] == 'newtifry.instance':
+    if device['device_type_id'] == 'notify.newtifry':
         operator = 'Newtifry'
-        id = xplPlugin.get_parameter_for_feature(instance, 'xpl_stats',  'xPL_ack-msg',  'to')
-    #        id = xplPlugin.get_parameter_for_feature(instance, 'xpl_commands',  'xPL_send_msg',  'to')
-        sourcekey = xplPlugin.get_parameter(instance, 'sourcekey')
-        backend = xplPlugin.get_parameter(instance, 'backend')
-        defaulttitle = xplPlugin.get_parameter(instance, 'defaulttitle')
-        if operator and instance["name"] and id and sourcekey :
-            params = {'name': instance["name"] , 'operator' : operator, 'to' : id, 'sourcekey' : sourcekey, 'backend': backend,'defaulttitle' : defaulttitle}
+        id = xplPlugin.get_parameter_for_feature(device, 'xpl_stats',  'xPL_ack-msg',  'to')
+        sourcekey = xplPlugin.get_parameter(device, 'sourcekey')
+        backend = xplPlugin.get_parameter(device, 'backend')
+        defaulttitle = xplPlugin.get_parameter(device, 'defaulttitle')
+        if operator and device["name"] and id and sourcekey :
+            params = {'name': device["name"] , 'operator' : operator, 'to' : id, 'sourcekey' : sourcekey, 'backend': backend,'defaulttitle' : defaulttitle}
             return params
     return None
 
@@ -109,7 +107,7 @@ class BaseClientService():
             
     def update(self,  params):
         """ Create or update internal data, must be overwrited if others params needed.
-            @param params :  Values come from 'GetInstanceParams'.
+            @param params :  Values come from 'GetDeviceParams'.
                 type : dict
             @param get_parameter : XplPlugin.get_parameter method.
                 type : methode (device, key)

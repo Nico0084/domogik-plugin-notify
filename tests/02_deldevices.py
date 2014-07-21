@@ -3,6 +3,8 @@
 
 from domogik.tests.common.testdevice import TestDevice
 from domogik.common.utils import get_sanitized_hostname
+import traceback
+import sys
 
 if __name__ == "__main__":
 

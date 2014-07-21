@@ -32,7 +32,7 @@ Plugin configuration
 ====================
 Configuration
 -------------
-In Domogik administration section, go to client plugin-nutserve details page.
+In Domogik administration section, go to client plugin-notify details page.
 
 +----------------+----------------------+-------------------------------------------------------------------------------+
 |Key             | Default value        | Description                                                                   |
@@ -49,9 +49,9 @@ Creating devices for SMS Client
 -------------------------------
 In clients page of admin UI, go to **plugin-notify-<your_host_domogik>**, select tab **"Devices"**, **"New"** to create your devices.
 
-Chose one way creation by product or instance type.
+Chose one way creation by product or device type.
 
-Instance-type : smsweb.instance
+device_types : notify.smsweb
 *******************************
 
 +-------------------+-------------------+------------------------------------------------------------------------------+
@@ -74,7 +74,7 @@ Instance-type : smsweb.instance
 | Global pwd        | My password       | User password service.                                                       |
 +-------------------+-------------------+------------------------------------------------------------------------------+
 
-Instance-type : newtifry.instance
+Instance-type : notify.newtifry
 *********************************
 
 Configure your `Newtifry acces <https://newtifry.appspot.com/page/api>`_ 
@@ -89,7 +89,7 @@ Configure your `Newtifry acces <https://newtifry.appspot.com/page/api>`_
 | Global to          | My Newtifry title | Source title set in Newtify config.                                         |
 +--------------------+-------------------+-----------------------------------------------------------------------------+
 | Global backend     | backend service   | BACKEND of newtifry server.                                                 |
-|                    |                   | If not set use default : https://newtifry.appspot.com/newtifry              |
+|                    |                   | Set default value : https://newtifry.appspot.com/newtifry                   |
 |                    |                   | Otherwise give your own server adress.                                      |
 +--------------------+-------------------+-----------------------------------------------------------------------------+
 | Global sourcekey   | My source key     | 32bits source key generate by Newtify..                                     |

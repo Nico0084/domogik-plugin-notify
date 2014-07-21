@@ -89,12 +89,12 @@ Editin JSON file plugin
 
 Some adding must be necessary to do in info.json file:
 
-- For an SMS web service just add your operator id in ``parameters``, ``operator``, key ``choices`` of ``instance_types``, instance ``smsweb.instance``::
+- For an SMS web service just add your operator id in ``parameters``, ``operator``, key ``choices`` of ``device_types``, instance ``notify.smsweb``::
 
     ......
-    "smsweb.instance" : {
+    "notify.smsweb" : {
             "description" : "Send SMS using web service phone operator.",
-            "id" : "smsweb.instance",
+            "id" : "notify.smsweb",
             "name" : "SMS operator web service",
             "commands" : ["send_msg"],
             "sensors" : ["msg_status", "error_send"],
@@ -130,11 +130,11 @@ Some adding must be necessary to do in info.json file:
         },
         .....
 
-- For a new servcie or hardware, create your own instance_type ::
+- For a new servcie or hardware, create your own device_types ::
 
-    "mynewservice.instance" : {
+    "notify.mynewservice" : {
             "description" : "A simple description of service.",
-            "id" : "mynewservice.instance",
+            "id" : "notify.mynewservice",
             "name" : "Name service",
             "commands" : ["send_extendmsg or send_msg"], # chose type of message
             "sensors" : ["msg_status", "error_send"],
@@ -186,14 +186,14 @@ There is 3 thinks to do in this file :
         newOperator = MyNewClient(params,  log)
         ....
 
-- 3rd : If you have ceated a new instance_type, you have to add new client getting specifique parameters in ``GetInstanceParams`` methode. ::
+- 3rd : If you have ceated a new instance_type, you have to add new client getting specifique parameters in ``GetDeviceParams`` methode. ::
 
-    def GetInstanceParams(xplPlugin, instance):
+    def GetDeviceParams(xplPlugin, device):
         """ Return all internal parameters depending of instance_type.
             - Developer : add your instance_type proper parameters
                 @param xplPlugin : XplPlugin base class reference for "get_parameter" and "get_parameter_for_feature"" methods access.
                     type : object class XplPlugin
-                @param instance :  domogik device data.
+                @param device :  domogik device data.
                     type : dict
                 @return : parameters for creating or update ClientService object.
                         Value must contain at least keys :
@@ -202,14 +202,14 @@ There is 3 thinks to do in this file :
                     type : dict
         """
         ...
-        elif instance['device_type_id'] == 'newtifry.instance':
+        elif device['device_type_id'] == 'newtifry.device':
             operator = 'My_NEW_OPERATOR'
-            id = xplPlugin.get_parameter_for_feature(instance, 'xpl_stats',  'xPL_ack-msg',  'to')  # keep this line
-            valueKey1 = xplPlugin.get_parameter(instance, 'key1')                                   # Get your new instance paramaters
-            valuekey2 = xplPlugin.get_parameter(instance, 'key2')                                   # Get your new instance paramaters
-            if operator and instance["name"] and id and key1 :                                      # check for none optional parameters
+            id = xplPlugin.get_parameter_for_feature(device, 'xpl_stats',  'xPL_ack-msg',  'to')  # keep this line
+            valueKey1 = xplPlugin.get_parameter(device, 'key1')                                   # Get your new device paramaters
+            valuekey2 = xplPlugin.get_parameter(device, 'key2')                                   # Get your new device paramaters
+            if operator and device["name"] and id and key1 :                                      # check for none optional parameters
                     # Build a dict with parameters
-                params = {'name': instance["name"] , 'operator' : operator, 'to' : id, 'key1' : valueKey1, key2 : valuekey2}
+                params = {'name': device["name"] , 'operator' : operator, 'to' : id, 'key1' : valueKey1, key2 : valuekey2}
                 return params                                                                       # return your own parameters
         ...
 

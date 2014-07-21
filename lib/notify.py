@@ -4,7 +4,7 @@
 #import PyNUT
 import time
 from domogik_packages.plugin_notify.lib.notify_client import NotifyClient, getClientId
-from domogik_packages.plugin_notify.lib.client_devices import GetInstanceParams, OPERATORS_SERVICE
+from domogik_packages.plugin_notify.lib.client_devices import GetDeviceParams, OPERATORS_SERVICE
 
 class NotifyClientsManagerException(Exception):
     """
@@ -45,7 +45,7 @@ class NotifyClientsManager :
             self._xplPlugin.log.debug(u"Manager Client : Notify Client {0} already exist, not added.".format(name))
             return False
         else:
-            params = GetInstanceParams(self._xplPlugin, instance)
+            params = GetDeviceParams(self._xplPlugin, instance)
             if params :
                 if params['operator'] in OPERATORS_SERVICE :
                     self.clients[name] = NotifyClient(self,  params,  self._xplPlugin.log)

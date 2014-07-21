@@ -3,12 +3,12 @@
             "name" : "Operator SMS web service",
             "id" : "SMSWeb_client",
             "documentation" : "",
-            "type" : "smsweb.instance"
+            "type" : "notify.smsweb"
         },{
             "name" : "Newtifry web service for Android",
             "id" : "Newtifry_client",
             "documentation" : "https://newtifry.appspot.com/",
-            "type" : "newtifry.instance"
+            "type" : "notify.newtifry"
         }
         
     ],
@@ -127,9 +127,9 @@
         }
     },
     "device_types" : {
-        "smsweb.instance" : {
+        "notify.smsweb" : {
             "description" : "Send SMS using web service phone operator.",
-            "id" : "smsweb.instance",
+            "id" : "notify.smsweb",
             "name" : "SMS operator web service",
             "commands" : ["send_msg"],
             "sensors" : ["msg_status", "error_send"],
@@ -142,7 +142,7 @@
                     "key" : "operator",
 					"xpl": false,
                     "description" : "Operator service.",
-                    "type" : "enum",
+                    "type" : "choice",
                     "choices" : {
                         "Bouygues_sms-web" : "Bouygues service",
                         "Freemobile_sms-web" : "Freemobile service",
@@ -162,9 +162,9 @@
                 }
             ]
         },
-        "newtifry.instance" : {
+        "notify.newtifry" : {
             "description" : "Send message using newtifry web service for Android.",
-            "id" : "newtifry.instance",
+            "id" : "notify.newtifry",
             "name" : "Newtifry web service",
             "commands" : ["send_extendmsg"],
             "sensors" : ["msg_status", "error_send"],
