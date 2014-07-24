@@ -29,10 +29,10 @@ def create_device():
     params["name"] = DEVICE_NAME
     params["reference"] = "reference"
     params["description"] = "description"
-    for idx, val in enumerate(params['no-xpl']):
-        if params['no-xpl'][idx]['key'] == 'operator' :  params['no-xpl'][idx]['value'] = OPERATOR
-        if params['no-xpl'][idx]['key'] == 'login' :  params['no-xpl'][idx]['value'] = OP_LOGIN
-        if params['no-xpl'][idx]['key'] == 'pwd' :  params['no-xpl'][idx]['value'] = OP_PWD
+    for idx, val in enumerate(params['global']):
+        if params['global'][idx]['key'] == 'operator' :  params['global'][idx]['value'] = OPERATOR
+        if params['global'][idx]['key'] == 'login' :  params['global'][idx]['value'] = OP_LOGIN
+        if params['global'][idx]['key'] == 'pwd' :  params['global'][idx]['value'] = OP_PWD
 
     for idx, val in enumerate(params['xpl']):
         params['xpl'][idx]['value'] = PHONE_TEL
@@ -49,10 +49,10 @@ def create_device():
     params["name"] = DEVICE_NAME_NOTIFRY
     params["reference"] = "reference"
     params["description"] = "description"
-    for idx, val in enumerate(params['no-xpl']):
-        if params['no-xpl'][idx]['key'] == 'sourcekey' :  params['no-xpl'][idx]['value'] = SOURCE_KEY
-        if params['no-xpl'][idx]['key'] == 'defaulttitle' :  params['no-xpl'][idx]['value'] = 'Test message'
-        if params['no-xpl'][idx]['key'] == 'backend' :  params['no-xpl'][idx]['value'] = BACKEND
+    for idx, val in enumerate(params['global']):
+        if params['global'][idx]['key'] == 'sourcekey' :  params['global'][idx]['value'] = SOURCE_KEY
+        if params['global'][idx]['key'] == 'defaulttitle' :  params['global'][idx]['value'] = 'Test message'
+        if params['global'][idx]['key'] == 'backend' :  params['global'][idx]['value'] = BACKEND
 
     for idx, val in enumerate(params['xpl']):
         params['xpl'][idx]['value'] = TO

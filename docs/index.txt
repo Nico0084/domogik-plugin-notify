@@ -1,8 +1,10 @@
-.. _index:
+﻿.. _toc:
 
 ================
 Table of content
 ================
+.. toctree::
 
-* :doc:`Plugin documentation </notify>`
-* :doc:`Development informations</dev>`
+    /notify
+    /dev
+    /changelog

@@ -158,7 +158,7 @@
                     "key" : "pwd",
 					"xpl": false,
                     "description" : "User password service.",
-                    "type" : "string"
+                    "type" : "password"
                 }
             ]
         },
