@@ -84,6 +84,7 @@
             "incremental": false,
             "data_type" : "DT_String",
             "conversion" : "",
+            "timeout": 0,
             "history": {
                     "store": true,
                     "duplicate": false,
@@ -97,6 +98,7 @@
             "incremental": false,
             "data_type" : "DT_String",
             "conversion" : "",
+            "timeout": 0,
             "history": {
                     "store": true,
                     "duplicate": false,
