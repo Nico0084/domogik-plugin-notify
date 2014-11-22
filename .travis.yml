@@ -1,9 +1,6 @@
 # This file is used for automated tests with Travis CI : travis-ci.org
 # based on the template version 1
 # the templates are availables in the documentation on http://docs.domogik.org/domogik/dev/en/package_development/plugins/tests/travis_templates.html
-#
-# Template version : 1
-
 language: python
 python:
   - "2.7"
@@ -23,11 +20,11 @@ install:
   - ~/domogik/src/domogik/tests/travis/travis-install-dependencies.sh
 before_script:
   - ~/domogik/src/domogik/tests/travis/travis-setup-database.sh
+  - ~/domogik/src/domogik/tests/travis/travis-install-domogik-mq.sh
   - ~/domogik/src/domogik/tests/travis/travis-install-domogik.sh
-  - ~/domogik/src/domogik/tests/travis/travis-install-plugin.sh
+  - ~/domogik/src/domogik/tests/travis/travis-install-plugin.sh 
   - sudo ~/domogik/src/domogik/tests/travis/travis-start-domogik.sh
 script:
-  - echo $TRAVIS_BUILD_DIR
   - cd $TRAVIS_BUILD_DIR
   - dmg_testrunner -a /var/lib/domogik/domogik_packages/plugin_$DMG_PLUGIN/tests/
 after_script:
