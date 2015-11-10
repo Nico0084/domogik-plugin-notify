@@ -10,19 +10,19 @@
             "documentation" : "https://newtifry.appspot.com/",
             "type" : "notify.newtifry"
         }
-        
+
     ],
     "configuration" : [{
-            "default": "Domogik notification", 
-            "description": "Define header of all messages.", 
-            "key": "msg_header", 
+            "default": "Domogik notification",
+            "description": "Define header of all messages.",
+            "key": "msg_header",
             "name": "Message header",
             "required": "no",
             "type": "string"
         },{
-            "default": false, 
-            "description": "Send a notification message to all notify clients at starting plugin.", 
-            "key": "send_at_start", 
+            "default": false,
+            "description": "Send a notification message to all notify clients at starting plugin.",
+            "key": "send_at_start",
             "name": "send message at start up",
             "required": "no",
             "type": "boolean"
@@ -203,7 +203,7 @@
         "domogik_min_version" : "0.4.0",
         "name" : "notify",
          "type" : "plugin",
-        "version" : "0.2a0"
+        "version" : "0.2b1"
     },
     "json_version" : 2
 }
