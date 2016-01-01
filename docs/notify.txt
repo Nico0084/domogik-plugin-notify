@@ -59,7 +59,7 @@ device_types : notify.smsweb
 +===================+===================+==============================================================================+
 | Device            | My phone id       | The display name for this device.                                            |
 +-------------------+-------------------+------------------------------------------------------------------------------+
-| Description       | What you want     | A short descriptionn for this device.                                        |
+| Description       | What you want     | A short description for this device.                                        |
 +-------------------+-------------------+------------------------------------------------------------------------------+
 | Global to         | My Phone number   | Phone number to send SMS.                                                    |
 +-------------------+-------------------+------------------------------------------------------------------------------+
@@ -84,7 +84,7 @@ Configure your `Newtifry acces <https://newtifry.appspot.com/page/api>`_
 +====================+===================+=============================================================================+
 | Device             | My phone id       | The display name for this device.                                           |
 +--------------------+-------------------+-----------------------------------------------------------------------------+
-| Description        | What you want     | A short descriptionn for this device.                                       |
+| Description        | What you want     | A short description for this device.                                       |
 +--------------------+-------------------+-----------------------------------------------------------------------------+
 | Global to          | My Newtifry title | Source title set in Newtify config.                                         |
 +--------------------+-------------------+-----------------------------------------------------------------------------+
