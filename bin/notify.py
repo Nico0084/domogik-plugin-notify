@@ -51,7 +51,7 @@ except ImportError as exc :
     import logging
     logging.basicConfig(filename='/var/log/domogik/notify_start_error.log',level=logging.DEBUG)
     log = logging.getLogger('NotifyManager_start_error')
-    err = "Error: Plugin Starting failed to import module ({})".format(exc) 
+    err = u"Error: Plugin Starting failed to import module ({})".format(exc)
     print err
     logging.error(err)
     print log
@@ -75,8 +75,8 @@ class NotifyManager(XplPlugin):
         for a_device in self.devices :
             try :
                 if self.managerClients.addClient(a_device) :
-                    self.log.info("Ready to work with device {0}".format(getClientId(a_device)))
-                else : self.log.info("Device parameters not configured, can't create Notify Client : {0}".format(getClientId(a_device)))
+                    self.log.info(u"Ready to work with device {0}".format(getClientId(a_device)))
+                else : self.log.info(u"Device parameters not configured, can't create Notify Client : {0}".format(getClientId(a_device)))
             except:
                 self.log.error(traceback.format_exc())
         # Create the xpl listeners
@@ -87,10 +87,10 @@ class NotifyManager(XplPlugin):
         self.log.info("Plugin ready :)")
         if self.get_config("send_at_start") : self.managerClients.NotifyClientsConnection()
         self.ready()
-        
+
     def __del__(self):
         """Close managerClients"""
-        print "Try __del__ self.managerClients."
+        print (u"Try __del__ self.managerClients.")
         self.managerClients = None
 
     def send_xplStat(self, data):
@@ -105,13 +105,13 @@ class NotifyManager(XplPlugin):
     def send_xplTrig(self, schema,  data):
         """ Send xPL message on network
         """
-        self.log.debug("Xpl Trig for {0}".format(data))
+        self.log.debug(u"Xpl Trig for {0}".format(data))
         msg = XplMessage()
         msg.set_type("xpl-trig")
         msg.set_schema(schema)
         msg.add_data(data)
         self.myxpl.send(msg)
-        
+
     def send_xplCmd(self, data):
         """ Send xPL cmd message on network
         """
@@ -124,26 +124,24 @@ class NotifyManager(XplPlugin):
         self.myxpl.send(msg)
 
     def handle_xpl_trig(self, message):
-        self.log.debug("xpl-trig listener received message:{0}".format(message))
+        self.log.debug(u"xpl-trig listener received message:{0}".format(message))
         print message
-    
+
     def handle_xpl_cmd(self,  message):
         """ Process xpl schema sendmsg.basic
         """
-        self.log.debug("xpl-cmds listener received message:{0}".format(message))
+        self.log.debug(u"xpl-cmds listener received message:{0}".format(message))
         device_name = message.data['to']
-        self.log.debug("device :" + device_name)
         idsClient = self.managerClients.getIdsClient(device_name)
         find = False
         if idsClient != [] :
-            for id in idsClient :       
+            for id in idsClient :
                 client = self.managerClients.getClient(id)
                 if client :
-                    self.log.debug("Handle xpl-cmds for Notify client :{0}".format(message.data['to']))
+                    self.log.debug(u"Handle xpl-cmds for Notify client :{0}".format(message.data['to']))
                     find = True
                     client.handle_xpl_cmd(message.data)
-        if not find : self.log.debug("xpl-cmds received for unknowns Notify client :{0}".format(message.data['to']))
-    
+        if not find : self.log.warning(u"xpl-cmds received for unknown Notify client :{0}".format(message.data['to']))
 
 if __name__ == "__main__":
     NotifyManager()

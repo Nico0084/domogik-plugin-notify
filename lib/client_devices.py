@@ -38,12 +38,12 @@ Implements
 @organization: Domogik
 """
 OPERATORS_SERVICE =  ['SFR_sms-web', 'Orange_sms-web', 'Bouygues_sms-web', 'Freemobile_sms-web', 'Newtifry']
-                    
+
 def createDevice(params, log = None):
     """ Create a device depending of operator, use instance for get parameters.
         - Developer : add your python class derived from DeviceBase class."""
     newOperator = None
-    if params['operator'] == 'SFR_sms-web' : 
+    if params['operator'] == 'SFR_sms-web' :
         from domogik_packages.plugin_notify.lib.smsweb_sfr import SFR_sms
         newOperator = SFR_sms(params, log)
     elif params['operator'] == 'Orange_sms-web' :
@@ -73,7 +73,7 @@ def GetDeviceParams(xplPlugin, device):
                         - 'to' = Client reference, the same as xPL key 'to'
                 type : dict
     """
-    print "Extract parameters from device : \n{0}".format(device)
+    print (u"Extract parameters from device : \n{0}".format(device))
     if device['device_type_id'] == 'notify.smsweb':
         operator = xplPlugin.get_parameter(device, 'operator')
         id = xplPlugin.get_parameter_for_feature(device, 'xpl_stats',  'xPL_ack-msg',  'to')
@@ -97,14 +97,14 @@ class BaseClientService():
     """ Basic Class for operator functionnalities.
         - Developper : Use on inherite class to impllement new operator class
                 Overwrite  methods to handle xpl event."""
-                
+
     def __init__(self, params, log):
         """ Must be called and overwrited with operator parameters.
         """
         self._log = log
         self.update(params)
-        if self._log : self._log.info("Client {0} created , with parameters : {1}".format(self.__class__.__name__,  params))
-            
+        if self._log : self._log.info(u"Client {0} created , with parameters : {1}".format(self.__class__.__name__,  params))
+
     def update(self,  params):
         """ Create or update internal data, must be overwrited if others params needed.
             @param params :  Values come from 'GetDeviceParams'.
@@ -113,11 +113,11 @@ class BaseClientService():
                 type : methode (device, key)
         """
         if 'to' in params : self.to = params['to']
-        else : 
-            if self._log : self._log.warning("Updating Client {0}, parameters 'to' missing : {1}".format(self.__class__.__name__,  params))
+        else :
+            if self._log : self._log.warning(u"Updating Client {0}, parameters 'to' missing : {1}".format(self.__class__.__name__,  params))
         if 'login' in params : self.login = params['login']
         if 'pwd' in params : self.password = params['pwd']
-        
+
     def send(self, message):
         """ Must be overwrited:
             @param message : message dict data contain at least keys:
@@ -127,5 +127,5 @@ class BaseClientService():
                 - extra key defined in 'command' json declaration like 'title', priority', ....
             @return : dict = {'status' : <Status info>, 'error' : <Error Message>}
         """
-        return {'status': 'SMS not sended', 'error': 'Send function not defined.'}
-        
+        return {'status': u'SMS not sended', 'error': u'Send function not defined.'}
+

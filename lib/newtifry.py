@@ -56,25 +56,25 @@ class Newtifry(BaseClientService):
         self.sourcekey = params['sourcekey']
         self.backend = params['backend'] if 'backend' in params else None
         self.defaulttitle = params['defaulttitle'] if 'defaulttitle' in params else None
-    
+
     def send_msg(self, message):
         backend = BACKEND_NEWTIFRY if self.backend == None else self.backend
         request =  urllib.urlencode(message)
-        print "send_msg : \n" , request
+        print (u"send_msg : {0}".format(request))
         try:
             response = urllib2.urlopen(backend,  request)    # This request is sent in HTTP POST
             # Read the body.
             body = response.read()
             # It's JSON - parse it.
             contents = json.loads(body)
-            print contents
+            print (contents)
             if contents.has_key('error'):
-                return {'status': 'Message not sended', 'error': "Server did not accept our message: {0".format(contents['error'])}
+                return {'status': u'Message not sended', 'error': "Server did not accept our message: {0}".format(contents['error'])}
             else:
-                return {'status': 'Message sended. Size: {0}.'.format( contents['size']), 'error': ''}
+                return {'status': u'Message sended. Size: {0}.'.format( contents['size']), 'error': u''}
         except urllib2.URLError, e:
-            print "failed : {0}".format(e)
-            return {'status': 'Message not sended', 'error':  format(e)}
+            print (u"failed : {0}".format(e))
+            return {'status': u'Message not sended', 'error':  format(e)}
 
     def send(self, message):
         """ Send message
@@ -85,12 +85,12 @@ class Newtifry(BaseClientService):
                 - extra key defined in 'command' json declaration like 'title', priority', ....
             @return : dict = {'status' : <Status info>, 'error' : <Error Message>}
         """
-        msg = {'format' : 'json',  'source': self.sourcekey, 'title': 'Notification', 'message': message['body']}
+        msg = {'format' : 'json',  'source': self.sourcekey, 'title': u'Notification', 'message': message['body']}
         if 'title' in message : msg['title'] = message['title']
         elif self.defaulttitle : msg['title'] = self.defaulttitle
         if 'priority' in message : msg['priority'] = message['priority']
         if 'url' in message : msg['url'] = message['url']
         if 'image' in message : msg['image'] = message['image']
         result = self.send_msg(msg)
-        print result
+        print(result)
         return result

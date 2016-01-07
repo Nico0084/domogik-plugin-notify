@@ -58,7 +58,7 @@ class SFR_sms(BaseClientService):
         browser.open(url_sms)
         print(browser.geturl())
         for x in browser.forms():
-        	print(x)	
+        	print(x)
         browser.select_form(nr=0)
         browser['username'] = self.login
         browser['password'] = self.password
@@ -67,26 +67,26 @@ class SFR_sms(BaseClientService):
         return 1
 
     def send_sms(self, to, body, browser):
-        print("sms_send : entrée")
+        print(u"sms_send : entrée")
         if self.phone_regex.match(to) is None:
-            return {'status': 'SMS not sended', 'error': 'Sms format to is bad.'}
+            return {'status': u'SMS not sended', 'error': 'Sms format to is bad.'}
         if self.phone_regex.match(self.to) is None:
-            return {'status': 'SMS not sended', 'error': 'Sms format phone is bad.'}
+            return {'status': u'SMS not sended', 'error': 'Sms format phone is bad.'}
 
         browser.open(url_sms)
-        print("sms_send : formulaire sms")
+        print(u"sms_send : formulaire sms")
         for x in browser.forms():
-                print(x)	
+                print(x)
         browser.select_form(nr=0)
         browser['msisdns'] = to
         browser['textMessage'] = body.encode('utf-8')
         browser.submit()
-        print("sms_send : confirmation sms")
+        print(u"sms_send : confirmation sms")
         for x in browser.forms():
-                print(x)	
+                print(x)
         browser.select_form(nr=0)
         browser.submit()
-        return {'status': 'SMS sended', 'error': ''}
+        return {'status': u'SMS sended', 'error': ''}
 
     def send(self, message):
         """ Send Sms
@@ -108,17 +108,17 @@ class SFR_sms(BaseClientService):
         cj = cookielib.LWPCookieJar()
         br.set_cookiejar(cj)
         #self._log.debug("call back5")
-        print("function Sms Send : before portail_login")
+        print(u"function Sms Send : before portail_login")
         if self.portail_login(br):
-            print("function Sms Send : between portail_login and send_sms")
-            msg = message['header'] + ': ' if message['header'] else ''
-            if 'title' in message : msg = msg + ' ** ' + message['title'] + ' ** '
+            print(u"function Sms Send : between portail_login and send_sms")
+            msg = message['header'] + u': ' if message['header'] else u''
+            if 'title' in message : msg = msg + u' ** ' + message['title'] + u' ** '
             msg = msg + message['body']
             result = self.send_sms(message['to'], msg , br)
-            print("function Sms Send : after send_sms")
+            print(u"function Sms Send : after send_sms")
         else:
-            print("function portail_login : error")
-            result = {'status': 'SMS not sended', 'error': 'Portail login error.'}
+            print(u"function portail_login : error")
+            result = {'status': u'SMS not sended', 'error': u'Portail login error.'}
         return result
 
 

@@ -12,11 +12,11 @@ class NotifyClientsManagerException(Exception):
     """
     def __init__(self, value):
         Exception.__init__(self)
-        self.value = "NotifyClientsManager exception" + value
+        self.value = u"NotifyClientsManager exception" + value
 
     def __str__(self):
         return repr(self.value)
-        
+
 class NotifyClientsManager :
     """
     Manager Notify Web Clients.
@@ -27,17 +27,17 @@ class NotifyClientsManager :
         self._cb_send_xPL = cb_send_xPL
         self.clients = {} # list of all Notify Clients
         self._xplPlugin.log.info(u"Manager Notify Clients is ready.")
-        
+
     def _del__(self):
         """Delete all Notify CLients"""
-        print "try __del__ NotifyClients"
+        print (u"try __del__ NotifyClients")
         for id in self.clients : self.clients[id] = None
-        
+
     def stop(self):
         """Close all Notify CLients"""
         self._xplPlugin.log.info(u"Closing NotifyManager.")
         for id in self.clients : self.clients[id].close()
-    
+
     def addClient(self, instance):
         """Add a Notify from domogik instance"""
         name = getClientId(instance)
@@ -51,27 +51,27 @@ class NotifyClientsManager :
                     self.clients[name] = NotifyClient(self,  params,  self._xplPlugin.log)
                 else :
                     self._xplPlugin.log.error(u"Manager Client : Notify Client type {0} not exist, not added.".format(name))
-                    return False                
+                    return False
                 self._xplPlugin.log.info(u"Manager Client : created new client {0}.".format(name))
-            else : 
+            else :
                 self._xplPlugin.log.info(u"Manager Client : instance not configured can't add new client {0}.".format(name))
                 return False
             return True
-        
+
     def removeClient(self, name):
         """Remove a Notify client and close it"""
         client = self.getClient(name)
         if client :
             client.close()
             self.clients.pop(name)
-            
+
     def getClient(self, id):
         """Get Notify client object by id."""
         if self.clients.has_key(id) :
             return self.clients[id]
-        else : 
+        else :
             return None
-            
+
     def getIdsClient(self, idToCheck):
         """Get Notify client key ids."""
         retval =[]
@@ -84,28 +84,28 @@ class NotifyClientsManager :
                     break
         else :
             self._xplPlugin.log.debug (u"getIdsClient, no NotifyClient instance...")
-            if isinstance(idToCheck,  str) :  
+            if isinstance(idToCheck,  str) :
                 findId = idToCheck
                 self._xplPlugin.log.debug (u"str instance...")
             else :
                 if isinstance(idToCheck,  dict) :
                     if idToCheck.has_key('to') : findId = idToCheck['to']
                     else :
-                        if idToCheck.has_key('name') and idToCheck.has_key('id'): 
+                        if idToCheck.has_key('name') and idToCheck.has_key('id'):
                             findId = getClientId(idToCheck)
-            if self.clients.has_key(findId) : 
+            if self.clients.has_key(findId) :
                 retval = [findId]
                 self._xplPlugin.log.debug (u"key id type find")
             else :
                 self._xplPlugin.log.debug (u"No key id type, search {0} in devices {1}".format(findId, self.clients.keys()))
                 for id in self.clients.keys() :
                     self._xplPlugin.log.debug(u"Search in list by device key : {0}".format(self.clients[id].domogikDevice))
-                    if self.clients[id].domogikDevice == findId : 
-                        self._xplPlugin.log.debug('find Notify Client :)')
+                    if self.clients[id].domogikDevice == findId :
+                        self._xplPlugin.log.debug(u'find Notify Client :)')
                         retval.append(id)
         self._xplPlugin.log.debug(u"getIdsClient result : {0}".format(retval))
         return retval
-        
+
     def refreshClientDevice(self,  client):
         """Request a refresh domogik device data for a Notify Client."""
         cli = MQSyncReq(zmq.Context())
@@ -129,16 +129,16 @@ class NotifyClientsManager :
         for id in self.clients :
             message = {'to': self.clients[id]._operator.to}
             message['header'] = self._xplPlugin.get_config("msg_header")
-            message['title'] = 'Connexion'
+            message['title'] = u'Connexion'
             message['body'] = u"Your Terminal is registered to receive notification :)"
             data = self.clients[id]._operator.send(message)
-            if data['error'] == '' : del data['error']
+            if data['error'] == u'' : del data['error']
             data['to'] = self.clients[id].domogikDevice
             self.sendXplAck(data)
 
     def sendXplAck(self,  data):
         """Send an ack xpl message"""
-        self._cb_send_xPL("sendmsg.confirm", data)
+        self._cb_send_xPL(u"sendmsg.confirm", data)
 
     def sendXplTrig(self,  schema,  data):
         """Send an xpl message"""

@@ -83,9 +83,9 @@ class Orange_sms(BaseClientService):
 
     def send_sms(self,to,body,browser):
         if self.phone_regex.match(to) is None:
-            return {'status': 'SMS not sended', 'error': 'Sms format to is bad.'}
+            return {'status': u'SMS not sended', 'error': 'Sms format to is bad.'}
         if self.phone_regex.match(self.to) is None:
-            return {'status': 'SMS not sended', 'error': 'Sms format phone is bad.'}
+            return {'status': u'SMS not sended', 'error': 'Sms format phone is bad.'}
 
         browser.open(url_sms)
         if self.is_on_page(browser.geturl(),url_verif_sms):
@@ -115,7 +115,7 @@ class Orange_sms(BaseClientService):
             browser.submit()
             return {'status': 'SMS sended', 'error': ''}
         else:
-            return {'status': 'SMS not sended', 'error': 'SMS Error Compose and Send.'}
+            return {'status': u'SMS not sended', 'error': 'SMS Error Compose and Send.'}
 
     def send(self, to, body):
         """ Send Sms
@@ -133,20 +133,20 @@ class Orange_sms(BaseClientService):
         br.set_handle_referer(True)
         br.set_handle_refresh(True)
         br.set_handle_redirect(True)
-        
+
         cj = cookielib.LWPCookieJar()
         br.set_cookiejar(cj)
         #self._log.debug("call back5")
-        print("function Sms Send : before portail_login")
+        print(u"function Sms Send : before portail_login")
         if self.portail_login(br):
-            print("function Sms Send : between portail_login and send_sms")
-            msg = message['header'] + ': ' if message['header'] else ''
-            if 'title' in message : msg = msg + ' ** ' + message['title'] + ' ** '
+            print(u"function Sms Send : between portail_login and send_sms")
+            msg = message['header'] + u': ' if message['header'] else u''
+            if 'title' in message : msg = msg + u' ** ' + message['title'] + u' ** '
             msg = msg + message['body']
             result = self.send_sms(message['to'], msg, br)
-            print("function Sms Send : after send_sms")
+            print(u"function Sms Send : after send_sms")
         else:
-           result = {'status': 'SMS not sended', 'error': 'Portail login error.'}
+           result = {'status': u'SMS not sended', 'error': u'Portail login error.'}
         return result
 
 

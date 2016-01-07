@@ -56,7 +56,7 @@ class Bouygues_sms(BaseClientService):
         browser.open(url_sms)
         print(browser.geturl())
         for x in browser.forms():
-        	print(x)	
+        	print(x)
         browser.select_form(name='code')
         browser['j_username'] = login
         browser['j_password'] = password
@@ -64,21 +64,21 @@ class Bouygues_sms(BaseClientService):
         return 1
 
     def send_sms(self,to,body,browser):
-        print("sms_send : entrée")
+        print(u"sms_send : entrée")
         if self.phone_regex.match(to) is None:
-            return {'status': 'SMS not sended', 'error': 'Sms format to is bad.'}
+            return {'status': u'SMS not sended', 'error': 'Sms format to is bad.'}
         if self.phone_regex.match(self.to) is None:
-            return {'status': 'SMS not sended', 'error': 'Sms format phone is bad.'}
+            return {'status': u'SMS not sended', 'error': 'Sms format phone is bad.'}
 
         browser.open(url_sms2)
-        print("sms_send : formulaire sms")
+        print(u"sms_send : formulaire sms")
         for x in browser.forms():
-                print(x)	
+                print(x)
         browser.select_form(nr=0)
         browser['fieldMsisdn'] = to
         browser['fieldMessage'] = body.encode('utf-8')
         browser.submit()
-        return {'status': 'SMS sended', 'error': ''}
+        return {'status': u'SMS sended', 'error': u''}
 
     def send(self, to, body):
         """ Send Sms
@@ -100,11 +100,11 @@ class Bouygues_sms(BaseClientService):
         cj = cookielib.LWPCookieJar()
         br.set_cookiejar(cj)
         #self._log.debug("call back5")
-        print("function Sms Send : before portail_login")
+        print(u"function Sms Send : before portail_login")
         if self.portail_login(br):
-            print("function Sms Send : between portail_login and send_sms")
+            print(u"function Sms Send : between portail_login and send_sms")
             msg = message['header'] + ': ' if message['header'] else ''
-            if 'title' in message : msg = msg + ' ** ' + message['title'] + ' ** '
+            if 'title' in message : msg = msg + u' ** ' + message['title'] + u' ** '
             msg = msg + message['body']
             result = self.send_sms(message['to'], msg, br)
             print("function Sms Send : after send_sms")

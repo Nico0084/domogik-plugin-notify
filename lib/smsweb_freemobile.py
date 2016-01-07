@@ -46,36 +46,40 @@ url_sms = "https://smsapi.free-mobile.fr/sendmsg?"
 class Freemobile_sms(BaseClientService):
     """ Sms Control for Freemobile operator
     """
-    
+
     def send_sms(self,to,body):
-        print("sms_send : entrée")
         data = urllib.urlencode({'user' : self.login})
         data += "&"+ urllib.urlencode({'pass': self.password})
         data += "&"+ urllib.urlencode({'msg' : "{0}".format(body)})
         request = url_sms + data
-        print "send_sms : \n" , request
+        error = u''
+        print (u"send_sms : \n" , request)
         try:
             response = urllib2.urlopen(request)    # This request is sent in HTTP POST
         except IOError, e:
-            print "failed : {0}".format(e)
             codeResult = e.code
-            if codeResult == 400 : error = 'A mandatory parameter is missing'   #Un des paramètres obligatoires est manquant.
-            elif codeResult == 402 : error = 'Too many SMS were sent in too little time.'      # Trop de SMS ont été envoyés en trop peu de temps.
-            elif codeResult == 403 : error = 'The service is not enabled on the subscriber area, or login / incorrect key.'      # Le service n’est pas activé sur l’espace abonné, ou login / clé incorrect.
-            elif codeResult == 500 : error = 'Server side error. Please try again later.'      # Erreur côté serveur. Veuillez réessayez ultérieurement.
+            if codeResult == 400 : error = u'A mandatory parameter is missing'   #Un des paramètres obligatoires est manquant.
+            elif codeResult == 402 : error = u'Too many SMS were sent in too little time.'      # Trop de SMS ont été envoyés en trop peu de temps.
+            elif codeResult == 403 : error = u'The service is not enabled on the subscriber area, or login / incorrect key.'      # Le service n’est pas activé sur l’espace abonné, ou login / clé incorrect.
+            elif codeResult == 500 : error = u'Server side error. Please try again later.'      # Erreur côté serveur. Veuillez réessayez ultérieurement.
             else : error = format(e)
-            return {'status': 'SMS not sended', 'error': error}
+            if self._log : self._log.error(u"Freemobile sms send failed : {0}, {1}".format(e,  error))
+            return {'status': u'SMS not sended', 'error': error}
         else :
             codeResult = response.getcode()
             response.close()
-            if codeResult == 200 : error = ''     # Le SMS a été envoyé sur votre mobile.
-            elif codeResult == 400 : error = 'A mandatory parameter is missing'   #Un des paramètres obligatoires est manquant.
-            elif codeResult == 402 : error = 'Too many SMS were sent in too little time.'      # Trop de SMS ont été envoyés en trop peu de temps.
-            elif codeResult == 403 : error = 'The service is not enabled on the subscriber area, or login / incorrect key.'      # Le service n’est pas activé sur l’espace abonné, ou login / clé incorrect.
-            elif codeResult == 500 : error = 'Server side error. Please try again later.'      # Erreur côté serveur. Veuillez réessayez ultérieurement.
-            else : error = 'Unknown error.'
-        if error != '' :  return {'status': 'SMS not sended', 'error': error}
-        else : return {'status': 'SMS sended', 'error': ''}
+            if codeResult == 200 : error = u''     # Le SMS a été envoyé sur votre mobile.
+            elif codeResult == 400 : error = u'A mandatory parameter is missing'   #Un des paramètres obligatoires est manquant.
+            elif codeResult == 402 : error = u'Too many SMS were sent in too little time.'      # Trop de SMS ont été envoyés en trop peu de temps.
+            elif codeResult == 403 : error = u'The service is not enabled on the subscriber area, or login / incorrect key.'      # Le service n’est pas activé sur l’espace abonné, ou login / clé incorrect.
+            elif codeResult == 500 : error = u'Server side error. Please try again later.'      # Erreur côté serveur. Veuillez réessayez ultérieurement.
+            else : error = u'Unknown error.'
+        if error != '' :
+            return {'status': u'SMS not sended', 'error': error}
+            if self._log : self._log.error(u"Freemobile sms send failed : {0}, {1}".format(e,  error))
+        else :
+            if self._log : self._log.info(u"Freemobile sms sended.")
+            return {'status': u'SMS sended', u'error': error}
 
     def send(self, message):
         """ Send Sms
@@ -86,8 +90,9 @@ class Freemobile_sms(BaseClientService):
                 - extra key defined in 'command' json declaration like 'title', priority', ....
             @return : dict = {'status' : <Status info>, 'error' : <Error Message>}
         """
-        msg = message['header'] + ': ' if message['header'] else ''
-        if 'title' in message : msg = msg + ' ** ' + message['title'] + ' ** '
+        if self._log : self._log.debug(u"Freemobile formating message: {0}".format(message))
+        msg = message['header'] + u': ' if message['header'] else u''
+        if 'title' in message : msg = msg + u' ** ' + message['title'] + u' ** '
         msg = msg + message['body']
         result = self.send_sms(message['to'], msg)
         print result
