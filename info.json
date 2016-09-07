@@ -27,6 +27,8 @@
             "required": "no",
             "type": "boolean"
         }],
+    "xpl_commands" : {},
+    "xpl_stats": {},
     "commands" : {
         "send_msg" : {
             "name" : "Send a message",
@@ -36,8 +38,7 @@
                     "data_type" : "DT_String",
                     "conversion" : ""
                 }
-            ],
-            "xpl_command" : "xPL_send_msg"
+            ]
         },
         "send_extendmsg" : {
             "name" : "Send a message with options",
@@ -63,19 +64,7 @@
                     "data_type" : "DT_String",
                     "conversion" : ""
                 }
-            ],
-            "xpl_command" : "xPL_send_msg"
-        }
-    },
-    "xpl_commands" : {
-        "xPL_send_msg" : {
-            "name" : "Send a message",
-            "schema" : "sendmsg.basic",
-            "xplstat_name" : "xPL_ack-msg",
-            "parameters" : {
-                "static" : [],
-                "device" : []
-            }
+            ]
         }
     },
     "sensors" : {
@@ -108,26 +97,6 @@
                 }
         }
     },
-    "xpl_stats" : {
-        "xPL_ack-msg" : {
-            "name" : "Message confirmation",
-            "schema" : "sendmsg.confirm",
-            "parameters" : {
-                "static" : [	],
-                "device" : [],
-                "dynamic" : [{
-                        "key" : "status",
-                        "ignore_values" : "",
-                        "sensor" : "msg_status"
-                    },{
-                        "key" : "error",
-                        "ignore_values" : "",
-                        "sensor" : "error_send"
-                    }
-                ]
-            }
-        }
-    },
     "device_types" : {
         "notify.smsweb" : {
             "description" : "Send SMS using web service phone operator.",
@@ -137,7 +106,7 @@
             "sensors" : ["msg_status", "error_send"],
             "parameters" : [{
                     "key" : "to",
-					"xpl": true,
+					"xpl": false,
                     "description" : "Phone number to send SMS.",
                     "type" : "string"
                 },{
@@ -172,7 +141,7 @@
             "sensors" : ["msg_status", "error_send"],
             "parameters" : [{
                     "key" : "to",
-					"xpl": true,
+					"xpl": false,
                     "description" : "Source title set in Newtify config.",
                     "type" : "string"
                 },{
@@ -199,11 +168,11 @@
         "author_email" : "nico84dev at gmail.com",
         "tags" : ["Telephony", "sms", "messaging", "notification"],
         "dependencies" : [],
-        "description" : "Send notifications SMS on web service for french telephony providers : Orange, SFR, Bouygues, Freemobile",
-        "domogik_min_version" : "0.4.0",
+        "description" : "Send notifications SMS on web service for french telephony providers : Orange, SFR, Bouygues, Freemobile. Also handle notifry web service.",
+        "domogik_min_version" : "0.5.0",
         "name" : "notify",
          "type" : "plugin",
-        "version" : "0.2b1"
+        "version" : "0.3.0"
     },
     "json_version" : 2
 }

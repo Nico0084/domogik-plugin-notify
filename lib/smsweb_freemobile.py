@@ -47,9 +47,9 @@ class Freemobile_sms(BaseClientService):
     """ Sms Control for Freemobile operator
     """
 
-    def send_sms(self,to,body):
-        data = urllib.urlencode({'user' : self.login})
-        data += "&"+ urllib.urlencode({'pass': self.password})
+    def send_sms(self, to, body):
+        data = urllib.urlencode({'user' : self.params['login']})
+        data += "&"+ urllib.urlencode({'pass': self.params['pwd']})
         data += "&"+ urllib.urlencode({'msg' : "{0}".format(body)})
         request = url_sms + data
         error = u''
@@ -95,6 +95,5 @@ class Freemobile_sms(BaseClientService):
         if 'title' in message : msg = msg + u' ** ' + message['title'] + u' ** '
         msg = msg + message['body']
         result = self.send_sms(message['to'], msg)
-        print result
         return result
 

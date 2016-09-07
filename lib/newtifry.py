@@ -37,6 +37,8 @@ Implements
 
 import urllib,urllib2
 import json
+import traceback
+
 #from domogik_packages.plugin_notify.lib.client_devices import BaseClientService
 from client_devices import BaseClientService
 
@@ -45,14 +47,12 @@ BACKEND_NEWTIFRY = "https://newtifry.appspot.com/newtifry"
 class Newtifry(BaseClientService):
     """ Notification Control for Newtifry web service
     """
-    def update(self,  params):
-        """ Create or update internal data, must be overwrited.
-            @param params :  domogik type.
+    def update(self, params):
+        """ Overwrited od BaseClientService class for extra parameters.
+            @param params :  parameters from GetDeviceParams() of domogik device.
                 type : dict
-            @param get_parameter : XplPlugin.get_parameter method.
-                type : methode (device, key)
         """
-        self.to = params['to']
+        BaseClientService.update(self, params)
         self.sourcekey = params['sourcekey']
         self.backend = params['backend'] if 'backend' in params else None
         self.defaulttitle = params['defaulttitle'] if 'defaulttitle' in params else None
@@ -62,7 +62,7 @@ class Newtifry(BaseClientService):
         request =  urllib.urlencode(message)
         print (u"send_msg : {0}".format(request))
         try:
-            response = urllib2.urlopen(backend,  request)    # This request is sent in HTTP POST
+            response = urllib2.urlopen(backend, request)    # This request is sent in HTTP POST
             # Read the body.
             body = response.read()
             # It's JSON - parse it.
@@ -85,12 +85,17 @@ class Newtifry(BaseClientService):
                 - extra key defined in 'command' json declaration like 'title', priority', ....
             @return : dict = {'status' : <Status info>, 'error' : <Error Message>}
         """
-        msg = {'format' : 'json',  'source': self.sourcekey, 'title': u'Notification', 'message': message['body']}
-        if 'title' in message : msg['title'] = message['title']
-        elif self.defaulttitle : msg['title'] = self.defaulttitle
-        if 'priority' in message : msg['priority'] = message['priority']
-        if 'url' in message : msg['url'] = message['url']
-        if 'image' in message : msg['image'] = message['image']
-        result = self.send_msg(msg)
-        print(result)
+        try :
+            msg = {'format' : 'json',  'source': self.sourcekey, 'title': u'Notification', 'message': message['body']}
+            if 'title' in message : msg['title'] = message['title']
+            elif self.defaulttitle : msg['title'] = self.defaulttitle
+            # optional parameters
+            if 'priority' in message : msg['priority'] = int(float(message['priority']))
+            if 'url' in message : msg['url'] = message['url']
+            if 'image' in message : msg['image'] = message['image']
+            result = self.send_msg(msg)
+            print(result)
+        except :
+            result = {'status': u"Message not sended", 'error':  u"Bad message format : {0}".format(message)}
+            self._log.warning(u"{0} Message <{1}> not sended. {2}".format(self.to, message, traceback.format_exc()))
         return result

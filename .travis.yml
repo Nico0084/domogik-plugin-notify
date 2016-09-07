@@ -10,7 +10,7 @@ mysql:
   username: travis
   encoding: utf8
 env:
-  DMG_BRANCH=master
+  DMG_BRANCH=develop
   DMG_PLUGIN=notify
 install:
   - cd ~
@@ -22,7 +22,7 @@ before_script:
   - ~/domogik/src/domogik/tests/travis/travis-setup-database.sh
   - ~/domogik/src/domogik/tests/travis/travis-install-domogik-mq.sh
   - ~/domogik/src/domogik/tests/travis/travis-install-domogik.sh
-  - ~/domogik/src/domogik/tests/travis/travis-install-plugin.sh 
+  - ~/domogik/src/domogik/tests/travis/travis-install-plugin.sh
   - sudo ~/domogik/src/domogik/tests/travis/travis-start-domogik.sh
 script:
   - cd $TRAVIS_BUILD_DIR

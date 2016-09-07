@@ -13,48 +13,7 @@ Header defined in plugin configuration is added at the top of message.
 xPL messages
 ============
 
-xPL messages are according to `xPL Project send message specification <http://xplproject.org.uk/wiki/index.php/Schema_-_SENDMSG.BASIC>`_
-
-xpl-stat
---------
-
-n/a
-
-xpl-trig
---------
-
-The **sendmsg.confirm** message is used
-***************************************
-::
-
-    xpl-trig
-    {
-    ...
-    }
-    sendmsg.confirm
-    {
-    to=<Email address, User ID or Phone Number>
-    status=<Status info>
-    [error=<Optional error Message>]
-    }
-
-xpl-cmnd
---------
-::
-
-    xpl-cmnd
-    {
-    ...
-    }
-    sendmsg.basic
-    {
-    to=<Email address, User ID or Phone Number>
-    body=<Message body>
-    [title=<Optional message title >]
-    [priority=<Optional number of massage priority ( 0 : no priority - 1 : info - 2 : warning - 3 : alert)>]
-    [url=<Optional URL to pass along, that would give more information about the message>]
-    [image=<Optional bitmap URL to pass along>]
-    }
+No xPL message handle, use only 0MQ
 
 Existing clients service.
 =========================
@@ -79,10 +38,12 @@ Existing clients service.
    Send notification using web service phone `Newtifry API <https://newtifry.appspot.com/page/api>`_
    Can use all xPL optional value ``title``, ``priority``, ``url``, ``image``
 
-Add developement NUT driver compatibility
------------------------------------------
+Developing new notification service
+==========================================
 
-Plugin offer way to add new client service.
+TODO : Check doc to use with non-xpl revision. 
+
+Plugin offer way to add new client service
 
 Editin JSON file plugin
 ***********************
@@ -130,7 +91,7 @@ Some adding must be necessary to do in info.json file:
         },
         .....
 
-- For a new servcie or hardware, create your own device_types ::
+- For a new service or hardware, create your own device_types ::
 
     "notify.mynewservice" : {
             "description" : "A simple description of service.",

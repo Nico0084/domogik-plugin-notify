@@ -39,7 +39,7 @@ Implements
 """
 OPERATORS_SERVICE =  ['SFR_sms-web', 'Orange_sms-web', 'Bouygues_sms-web', 'Freemobile_sms-web', 'Newtifry']
 
-def createDevice(params, log = None):
+def CreateOperator(params, log = None):
     """ Create a device depending of operator, use instance for get parameters.
         - Developer : add your python class derived from DeviceBase class."""
     newOperator = None
@@ -60,11 +60,11 @@ def createDevice(params, log = None):
         newOperator = Newtifry(params,  log)
     return newOperator
 
-def GetDeviceParams(xplPlugin, device):
+def GetDeviceParams(Plugin, device):
     """ Return all internal parameters depending of instance_type.
         - Developer : add your instance_type proper parameters
-            @param xplPlugin : XplPlugin base class reference for "get_parameter" and "get_parameter_for_feature"" methods access.
-                type : object class XplPlugin
+            @param Plugin : Plugin base class reference for "get_parameter" and "get_parameter_for_feature"" methods access.
+                type : object class Plugin
             @param device :  domogik device data.
                 type : dict
             @return : parameters for creating or update ClientService object.
@@ -75,19 +75,19 @@ def GetDeviceParams(xplPlugin, device):
     """
     print (u"Extract parameters from device : \n{0}".format(device))
     if device['device_type_id'] == 'notify.smsweb':
-        operator = xplPlugin.get_parameter(device, 'operator')
-        id = xplPlugin.get_parameter_for_feature(device, 'xpl_stats',  'xPL_ack-msg',  'to')
-        login = xplPlugin.get_parameter(device, 'login')
-        pwd = xplPlugin.get_parameter(device, 'pwd')
+        operator = device['parameters']['operator']['value']
+        id = device['parameters']['to']['value']
+        login = device['parameters']['login']['value']
+        pwd = device['parameters']['pwd']['value']
         if operator and device["name"] and id and login and pwd :
             params = {'name': device["name"], 'operator' : operator,  'to' : id,  'login' : login,  'pwd': pwd}
             return params
     if device['device_type_id'] == 'notify.newtifry':
         operator = 'Newtifry'
-        id = xplPlugin.get_parameter_for_feature(device, 'xpl_stats',  'xPL_ack-msg',  'to')
-        sourcekey = xplPlugin.get_parameter(device, 'sourcekey')
-        backend = xplPlugin.get_parameter(device, 'backend')
-        defaulttitle = xplPlugin.get_parameter(device, 'defaulttitle')
+        id = device['parameters']['to']['value']
+        backend = device['parameters']['backend']['value']
+        sourcekey = device['parameters']['sourcekey']['value']
+        defaulttitle = Plugin.get_parameter(device, 'defaulttitle')
         if operator and device["name"] and id and sourcekey :
             params = {'name': device["name"] , 'operator' : operator, 'to' : id, 'sourcekey' : sourcekey, 'backend': backend,'defaulttitle' : defaulttitle}
             return params
@@ -102,21 +102,26 @@ class BaseClientService():
         """ Must be called and overwrited with operator parameters.
         """
         self._log = log
+        self.to = ""
         self.update(params)
-        if self._log : self._log.info(u"Client {0} created , with parameters : {1}".format(self.__class__.__name__,  params))
+        if self._log : self._log.info(u"Operator {0} created , for device : {1}".format(self.__class__.__name__, params))
 
-    def update(self,  params):
+    def close(self):
+        """close himself."""
+        if self._log : self._log.info(u"Operator {0} removed , for device : {1}".format(self.__class__.__name__, self.params))
+
+    def update(self, params):
         """ Create or update internal data, must be overwrited if others params needed.
-            @param params :  Values come from 'GetDeviceParams'.
+            @param params :  parameters from GetDeviceParams() of domogik device'.
                 type : dict
-            @param get_parameter : XplPlugin.get_parameter method.
-                type : methode (device, key)
         """
-        if 'to' in params : self.to = params['to']
+        if 'to' in params :
+            self.params = params
+            self.to = params['to']
         else :
-            if self._log : self._log.warning(u"Updating Client {0}, parameters 'to' missing : {1}".format(self.__class__.__name__,  params))
-        if 'login' in params : self.login = params['login']
-        if 'pwd' in params : self.password = params['pwd']
+            if self._log : self._log.warning(u"Updating Client {0} dmgDevice, parameters 'to' missing : {1}".format(self.__class__.__name__, params))
+            self.params = None
+            self.to = ""
 
     def send(self, message):
         """ Must be overwrited:

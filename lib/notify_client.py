@@ -38,13 +38,8 @@ Implements
 @organization: Domogik
 """
 
+from domogik_packages.plugin_notify.lib.client_devices import CreateOperator, GetDeviceParams
 
-import json
-import threading
-import time
-import sys
-from domogik_packages.plugin_notify.lib.client_devices import createDevice, OPERATORS_SERVICE
-    
 class NotifyClientException(Exception):
     """
     NotifyClient exception
@@ -61,53 +56,106 @@ def getClientId(device):
     if device.has_key('name') and device.has_key('id'):
         return "{0}_{1}".format(device['name'], + device['id'])
     else : return None
-    
-class NotifyClient :
-    "Objet client de base pour la liaison operateur de Notification."
 
-    def __init__ (self,  manager,  params, log) :
-        "Initialise le client"
+class NotifyClient :
+    """Basic client Class for link to operator notifycation."""
+
+    def __init__ (self, manager, dmgDevice, params, log) :
+        """Initialize client"""
         self._manager = manager
         self.operator = params['operator']
         self.name = params['name']
         self._log = log
         self._operator = None
-        self._operator = createDevice(params, self._log)
+        self._dmgDevice = dmgDevice
+        self._operator = CreateOperator(params, self._log)
 
     # On accède aux attributs uniquement depuis les property
-    smsId = property(lambda self: getClientId(self._device)) 
-    domogikDevice = property(lambda self: self._getDomogikDevice())
+    clientId = property(lambda self: getClientId(self._device))
+    to = property(lambda self: self._getTo())
 
     def __del__(self):
-        '''Send Xpl message and Close updater timers.'''
+        """Close himself."""
         print "Try __del__ client"
         self.close()
-        
+
     def close(self):
-        """Send Xpl message and Close updater timers."""
-        self._log.info("Close SMS client {0}".format(self.name))
-        
-    def updateDevice(self,  params):
-        """Update device data."""
-        self._operator.update(params)
+        """Close operator."""
+        self.handle_cmd({"to": self.to, "title": "Disconnection" , "body": "Your Terminal is disconnect, it will no longer receive notifications."})
+        self._operator.close()
+        self._log.info("Close notification client {0} and his operator {1}".format(self.name, self.operator))
+
+    def updateDevice(self, dmgDevice):
+        """Update device data from a domogik device."""
+        params = GetDeviceParams(self.Plugin, dmgDevice)
+        self._dmgDevice = dmgDevice
+        if self.operator != params['operator'] : # Operator change, remove odl and create a new
+            del self._operator
+            CreateOperator(params, self._log)
+        else :                                   # Otherwise only update parameters
+            self._operator.update(params)
         self.operator = params['operator']
         self.name = params['name']
 
-    def _getDomogikDevice(self):
-        """Return device Id for xPL domogik device"""
+    def _getTo(self):
+        """Return to Id from client service"""
         if self._operator :
             return self._operator.to
         else : return None
 
-    def handle_xpl_cmd(self,  xPLmessage):
-        '''Handle a xpl-cmnd message from hub.
-        '''
-        if xPLmessage.has_key('to') and xPLmessage.has_key('body') :
-            xPLmessage['header'] = self._manager._xplPlugin.get_config("msg_header")
-            data = self._operator.send(xPLmessage)
-            if data['error'] == '' : del data['error']
-            data['to'] = self.domogikDevice
-            self._manager.sendXplAck(data)
-        else : 
-            self._log.debug(u"SMS Client {0}, recieved unknown command {1}".format(getClientId(self._device), xPLmessage))
-            
+    def getDmgDeviceId(self):
+        """Return domogik device ID."""
+        if self._dmgDevice :
+            return self._dmgDevice['id']
+        return None
+
+    def getDmgCommands(self):
+        """Return domogik commands for send message."""
+        commands = {}
+        if self._dmgDevice :
+            for cmd in self._dmgDevice['commands']:
+                print cmd
+                commands[cmd] = {'parameters': self._dmgDevice['commands'][cmd]['parameters'],
+                                 'id': self._dmgDevice['commands'][cmd]['id']}
+        else :
+            self._log.warning(u"Can't get domogik commands. Client {0} have not domogik device registered.".format(self.name))
+        print "commands : ",  commands
+        return commands
+
+    def getDmgSensors(self):
+        """Return domogik sensors status and error send."""
+        sensors = {}
+        if self._dmgDevice :
+            for sensor in self._dmgDevice['sensors']:
+                sensors[sensor] = {'data_type': self._dmgDevice['sensors'][sensor]['data_type'],
+                                            'id': self._dmgDevice['sensors'][sensor]['id']}
+        else :
+            self._log.warning(u"Can't get domogik sensors. Client {0} have not domogik device registered.".format(self.name))
+        print "sensors : ",  sensors
+        return sensors
+
+    def NotifyConnection(self):
+        """ Send a Notification connection."""
+        self.handle_cmd({'to': self.to, 'title': u"Connection", 'body': u"Your Terminal is registered to receive notification :)"})
+
+    def handle_cmd(self, message):
+        """Handle a cmd message from external (0MQ).
+        """
+        if self.to :
+            if not message.has_key('to'):  message['to'] = self.to
+            if message.has_key('body') :
+                if not message.has_key('header'): message['header'] = self._manager.Plugin.get_config("msg_header")
+                data = self._operator.send(message)
+            else :
+                self._log.debug(u"Notification Client {0}, recieved unknown command {1}".format(getClientId(self._device), message))
+                data = {'status': u"Notification Not Sended",
+                        'error': u"Notification Client {0}, recieved unknown command {1}".format(getClientId(self._device), message) }
+        else :
+            self._log.debug(u"Notification Client {0}, No operator registered, can't send notification :{1}".format(getClientId(self._device), message))
+            data = {'status': u"Notification Not Sended",
+                    'error': u"Notification Client {0}, No operator registered, can't send notification :{1}".format(getClientId(self._device), message)}
+        sensors = self.getDmgSensors()
+        if sensors :
+            self._manager.sendMQMsg(sensors['msg_status']['id'], sensors['msg_status']['data_type'], data['status'])
+            if data['error'] != u'' :
+                self._manager.sendMQMsg(sensors['error_send']['id'], sensors['error_send']['data_type'], data['error'])

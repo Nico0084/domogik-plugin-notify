@@ -40,7 +40,6 @@ Implements
 @organization: Domogik
 """
 
-import sys
 import mechanize
 import cookielib
 import urllib
@@ -56,15 +55,15 @@ class Orange_sms(BaseClientService):
     """
     phone_regex = re.compile('^(\+33|0033|0)(6|7)(\d{8})$')
 
-    def is_on_page(self,page, page2):
+    def is_on_page(self, page, page2):
         return re.search(page2, page)
 
     def portail_login(self,browser):
         browser.open(url_sms)
         print(browser.geturl())
         if self.is_on_page(browser.geturl(),url_verif_auth):
-            post_data = {"credential" : str(self.login),
-                           "pwd" : str(self.password),
+            post_data = {"credential" : str(self.params['login']),
+                           "pwd" : str(self.params['pwd']),
                            "save_user": "false",
                            "save_pwd" : "false",
                            "save_TC"  : "true",
@@ -81,7 +80,7 @@ class Orange_sms(BaseClientService):
         else:
             return 0
 
-    def send_sms(self,to,body,browser):
+    def send_sms(self, to, body, browser):
         if self.phone_regex.match(to) is None:
             return {'status': u'SMS not sended', 'error': 'Sms format to is bad.'}
         if self.phone_regex.match(self.to) is None:
@@ -117,7 +116,7 @@ class Orange_sms(BaseClientService):
         else:
             return {'status': u'SMS not sended', 'error': 'SMS Error Compose and Send.'}
 
-    def send(self, to, body):
+    def send(self, message):
         """ Send Sms
             @param message : message dict data contain at least keys:
                 - 'to' : recipient of the message
@@ -136,7 +135,6 @@ class Orange_sms(BaseClientService):
 
         cj = cookielib.LWPCookieJar()
         br.set_cookiejar(cj)
-        #self._log.debug("call back5")
         print(u"function Sms Send : before portail_login")
         if self.portail_login(br):
             print(u"function Sms Send : between portail_login and send_sms")
@@ -148,5 +146,3 @@ class Orange_sms(BaseClientService):
         else:
            result = {'status': u'SMS not sended', 'error': u'Portail login error.'}
         return result
-
-

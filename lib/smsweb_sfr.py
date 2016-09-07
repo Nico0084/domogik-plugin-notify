@@ -37,10 +37,8 @@ Implements
 @organization: Domogik
 """
 
-import sys
 import mechanize
 import cookielib
-import urllib
 import re
 from domogik_packages.plugin_notify.lib.client_devices import BaseClientService
 
@@ -54,14 +52,14 @@ class SFR_sms(BaseClientService):
     """
     phone_regex = re.compile('^(\+33|0033|0)(6|7)(\d{8})$')
 
-    def portail_login(self,browser):
+    def portail_login(self, browser):
         browser.open(url_sms)
         print(browser.geturl())
         for x in browser.forms():
         	print(x)
         browser.select_form(nr=0)
-        browser['username'] = self.login
-        browser['password'] = self.password
+        browser['username'] = self.params['login']
+        browser['password'] = self.params['pwd']
         browser['remember-me'] = ['on']
         browser.submit()
         return 1
@@ -107,7 +105,6 @@ class SFR_sms(BaseClientService):
 
         cj = cookielib.LWPCookieJar()
         br.set_cookiejar(cj)
-        #self._log.debug("call back5")
         print(u"function Sms Send : before portail_login")
         if self.portail_login(br):
             print(u"function Sms Send : between portail_login and send_sms")
@@ -120,5 +117,3 @@ class SFR_sms(BaseClientService):
             print(u"function portail_login : error")
             result = {'status': u'SMS not sended', 'error': u'Portail login error.'}
         return result
-
-

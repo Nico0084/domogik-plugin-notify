@@ -11,10 +11,9 @@ Last change
 ===========
 New instructions to apply changes from immediatly previous version.
 
-- 0.2a0 : (18-06-2014) First published version for domogik 0.4
-    - Target :
-    - Change log :
-        - Update doc
+- 0.3.0 : (07-09-2016) First published version for domogik 0.5
+    - Version without xpl, work with 0MQ
+	- Update device_type, recreate domogik device with them.
 
 - `Previous change <changelog.html>`_
 
@@ -59,7 +58,9 @@ device_types : notify.smsweb
 +===================+===================+==============================================================================+
 | Device            | My phone id       | The display name for this device.                                            |
 +-------------------+-------------------+------------------------------------------------------------------------------+
-| Description       | What you want     | A short descriptionn for this device.                                        |
+| Description       | What you want     | A short description  for this device.                                        |
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Reference         | What you want     | A reference for this device.                                                 |
 +-------------------+-------------------+------------------------------------------------------------------------------+
 | Global to         | My Phone number   | Phone number to send SMS.                                                    |
 +-------------------+-------------------+------------------------------------------------------------------------------+
@@ -84,7 +85,9 @@ Configure your `Newtifry acces <https://newtifry.appspot.com/page/api>`_
 +====================+===================+=============================================================================+
 | Device             | My phone id       | The display name for this device.                                           |
 +--------------------+-------------------+-----------------------------------------------------------------------------+
-| Description        | What you want     | A short descriptionn for this device.                                       |
+| Description        | What you want     | A short description for this device.                                       |
++-------------------+-------------------+------------------------------------------------------------------------------+
+| Reference         | What you want     | A reference for this device.                                                 |
 +--------------------+-------------------+-----------------------------------------------------------------------------+
 | Global to          | My Newtifry title | Source title set in Newtify config.                                         |
 +--------------------+-------------------+-----------------------------------------------------------------------------+

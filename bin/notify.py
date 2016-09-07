@@ -39,14 +39,14 @@ Implements
 """
 # A debugging code checking import error
 try:
-    from domogik.xpl.common.xplconnector import Listener
-    from domogik.xpl.common.xplmessage import XplMessage
-    from domogik.xpl.common.plugin import XplPlugin
+    from domogik.common.plugin import Plugin
+    from domogikmq.message import MQMessage
+    import traceback
+    import threading
 
     from domogik_packages.plugin_notify.lib.notify import NotifyClientsManager
     from domogik_packages.plugin_notify.lib.notify_client import getClientId
 
-    import traceback
 except ImportError as exc :
     import logging
     logging.basicConfig(filename='/var/log/domogik/notify_start_error.log',level=logging.DEBUG)
@@ -56,22 +56,23 @@ except ImportError as exc :
     logging.error(err)
     print log
 
-class NotifyManager(XplPlugin):
+class NotifyManager(Plugin):
     """ Envois et recois des codes xPL des notifications
     """
 
     def __init__(self):
         """ Init plugin
         """
-        XplPlugin.__init__(self, name='notify')
+        Plugin.__init__(self, name='notify')
 
         # check if the plugin is configured. If not, this will stop the plugin and log an error
         if not self.check_configured():
             return
+        self.managerClients = None
         # get the devices list
-        self.devices = self.get_device_list(quit_if_no_device = False)
+        self.refreshDevices()
         # get the config values
-        self.managerClients = NotifyClientsManager(self, self.send_xplTrig)
+        self.managerClients = NotifyClientsManager(self, self.send_sensor)
         for a_device in self.devices :
             try :
                 if self.managerClients.addClient(a_device) :
@@ -79,9 +80,6 @@ class NotifyManager(XplPlugin):
                 else : self.log.info(u"Device parameters not configured, can't create Notify Client : {0}".format(getClientId(a_device)))
             except:
                 self.log.error(traceback.format_exc())
-        # Create the xpl listeners
-        Listener(self.handle_xpl_cmd, self.myxpl,{'schema': 'sendmsg.basic',
-                                                                        'xpltype': 'xpl-cmnd'})
         self.add_stop_cb(self.managerClients.stop)
         print "Plugin ready :)"
         self.log.info("Plugin ready :)")
@@ -91,57 +89,87 @@ class NotifyManager(XplPlugin):
     def __del__(self):
         """Close managerClients"""
         print (u"Try __del__ self.managerClients.")
+        del self.managerClients
         self.managerClients = None
 
-    def send_xplStat(self, data):
-        """ Send xPL Stat message on network
-        """
-        msg = XplMessage()
-        msg.set_type("xpl-stat")
-        msg.set_schema("sensor.basic")
-        msg.add_data(data)
-        self.myxpl.send(msg)
+    def threadingRefreshDevices(self, max_attempt = 2):
+        """Call get_device_list from MQ
+            could take long time, run in thread to get free process"""
+        threading.Thread(None, self.refreshDevices, "th_refreshDevices", (), {"max_attempt": max_attempt}).start()
 
-    def send_xplTrig(self, schema,  data):
-        """ Send xPL message on network
-        """
-        self.log.debug(u"Xpl Trig for {0}".format(data))
-        msg = XplMessage()
-        msg.set_type("xpl-trig")
-        msg.set_schema(schema)
-        msg.add_data(data)
-        self.myxpl.send(msg)
+    def refreshDevices(self, max_attempt = 2):
+        self.devices = self.get_device_list(quit_if_no_device = False, max_attempt = 2)
+        print "*****",  self.devices
+        if self.devices :
+            self.log.debug(u"Device list refreshed: {0}".format(self.devices))
+            if self.managerClients is not None : self.managerClients.checkClientsRegistered(self.devices)
+        elif self.devices == [] :
+            self.log.warning(u"No existing device, create one with admin.")
+        else :
+            self.log.error(u"Can't retrieve the device list, MQ no response, try again or restart plugin.")
 
-    def send_xplCmd(self, data):
-        """ Send xPL cmd message on network
-        """
-        print "send xpl-cmnd : {0}".format(data)
-        msg = XplMessage()
-        msg.set_type("xpl-cmnd")
-        msg.set_schema("sendmsg.basic")
-        msg.add_data(data)
-        msg.set_source('domogik-dump_xpl.vmdomogik0')
-        self.myxpl.send(msg)
+    def _getDmgDevice(self, to):
+        """Return the domogik device if exist else None.
+            return the device for network (list)
+            return list of devices for node
+            return the device for value (instance) (list)"""
+        print (u"--- Search dmg device for : {0}".format(to))
+        dmgDevices = []
+        for dmgDevice in self.devices :
+            if 'to' in dmgDevice['parameters']:
+                if dmgDevice['parameters']['to']['value'] == to :
+                    dmgDevices.append(dmgDevice)
+        if dmgDevices :
+            self.log.debug(u"--- devices find for {0} : {1}".format(to, dmgDevices))
+            return dmgDevices
+        return []
 
-    def handle_xpl_trig(self, message):
-        self.log.debug(u"xpl-trig listener received message:{0}".format(message))
-        print message
+    def on_message(self, msgid, content):
+        """Handle pub message from MQ"""
+        print u"New pub message {0}, {1}".format(msgid, content)
+        if msgid == "device.update":
+            self.log.debug(u"New pub message {0}, {1}".format(msgid, content))
+            self.threadingRefreshDevices()
 
-    def handle_xpl_cmd(self,  message):
-        """ Process xpl schema sendmsg.basic
+    def on_mdp_request(self, msg):
+        """ Called when a MQ req/rep message is received
         """
-        self.log.debug(u"xpl-cmds listener received message:{0}".format(message))
-        device_name = message.data['to']
-        idsClient = self.managerClients.getIdsClient(device_name)
-        find = False
-        if idsClient != [] :
-            for id in idsClient :
-                client = self.managerClients.getClient(id)
-                if client :
-                    self.log.debug(u"Handle xpl-cmds for Notify client :{0}".format(message.data['to']))
-                    find = True
-                    client.handle_xpl_cmd(message.data)
-        if not find : self.log.warning(u"xpl-cmds received for unknown Notify client :{0}".format(message.data['to']))
+        Plugin.on_mdp_request(self, msg)
+        self.log.info(u"Received 0MQ messages: {0}".format(msg))
+        action = msg.get_action().split(".")
+        if action[0] == "client" and action[1] == "cmd" :
+            # action on dmg device
+            data = msg.get_data()
+            reply_msg = MQMessage()
+            reply_msg.set_action('client.cmd.result')
+            idsClient = self.managerClients.getIdsClient(data)
+            find = False
+            if idsClient != [] :
+                for id in idsClient :
+                    client = self.managerClients.getClient(id)
+                    if client :
+                        self.log.debug(u"Handle requested action for Notify client {0} : {1}".format(id, data))
+                        commands = client.getDmgCommands()
+                        for cmd in commands :
+                            if commands[cmd]['id'] == data['command_id'] :
+                                find = True
+                                client.handle_cmd(data)
+                                reply_msg.add_data('status', True)
+                                reply_msg.add_data('reason', None)
+                                break
+
+            if not find :
+                self.log.warning(u"Requested action received for unknown Notify client : {0}".format(data))
+                reply_msg.add_data('status', False)
+                reply_msg.add_data('reason', u"Requested action received for unknown Notify client : {0}".format(data))
+            self.log.debug(u"Reply to MQ: {0}".format(reply_msg.get()))
+            self.reply(reply_msg.get())
+
+    def send_sensor(self, sensor_id, dt_type, value):
+        """Send pub message over MQ"""
+        self.log.info(u"Sending MQ sensor id:{0}, dt type: {1}, value:{2}" .format(sensor_id, dt_type, value))
+        self._pub.send_event('client.sensor',
+                         {sensor_id : value})
 
 if __name__ == "__main__":
     NotifyManager()

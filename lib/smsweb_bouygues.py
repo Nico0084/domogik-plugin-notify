@@ -37,10 +37,8 @@ Implements
 @organization: Domogik
 """
 
-import sys
 import mechanize
 import cookielib
-import urllib
 import re
 from domogik_packages.plugin_notify.lib.client_devices import BaseClientService
 
@@ -52,18 +50,18 @@ class Bouygues_sms(BaseClientService):
     """
     phone_regex = re.compile('^(\+33|0033|0)(6|7)(\d{8})$')
 
-    def portail_login(self,browser):
+    def portail_login(self, browser):
         browser.open(url_sms)
         print(browser.geturl())
         for x in browser.forms():
         	print(x)
         browser.select_form(name='code')
-        browser['j_username'] = login
-        browser['j_password'] = password
+        browser['j_username'] = self.params['login']
+        browser['j_password'] = self.params['pwd']
         browser.submit()
         return 1
 
-    def send_sms(self,to,body,browser):
+    def send_sms(self, to, body, browser):
         print(u"sms_send : entrée")
         if self.phone_regex.match(to) is None:
             return {'status': u'SMS not sended', 'error': 'Sms format to is bad.'}
@@ -80,7 +78,7 @@ class Bouygues_sms(BaseClientService):
         browser.submit()
         return {'status': u'SMS sended', 'error': u''}
 
-    def send(self, to, body):
+    def send(self, message):
         """ Send Sms
             @param message : message dict data contain at least keys:
                 - 'to' : recipient of the message
@@ -99,7 +97,6 @@ class Bouygues_sms(BaseClientService):
 
         cj = cookielib.LWPCookieJar()
         br.set_cookiejar(cj)
-        #self._log.debug("call back5")
         print(u"function Sms Send : before portail_login")
         if self.portail_login(br):
             print(u"function Sms Send : between portail_login and send_sms")
@@ -112,5 +109,3 @@ class Bouygues_sms(BaseClientService):
             print("function portail_login : error")
             result = {'status': 'SMS not sended', 'error': 'Portail login error.'}
         return result
-
-
