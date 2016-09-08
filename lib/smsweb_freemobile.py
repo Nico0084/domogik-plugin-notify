@@ -50,10 +50,9 @@ class Freemobile_sms(BaseClientService):
     def send_sms(self, to, body):
         data = urllib.urlencode({'user' : self.params['login']})
         data += "&"+ urllib.urlencode({'pass': self.params['pwd']})
-        data += "&"+ urllib.urlencode({'msg' : "{0}".format(body)})
+        data += "&"+ urllib.urlencode({'msg' : u"{0}".format(body)})
         request = url_sms + data
         error = u''
-        print (u"send_sms : \n" , request)
         try:
             response = urllib2.urlopen(request)    # This request is sent in HTTP POST
         except IOError, e:

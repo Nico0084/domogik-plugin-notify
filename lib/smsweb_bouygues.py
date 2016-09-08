@@ -52,9 +52,9 @@ class Bouygues_sms(BaseClientService):
 
     def portail_login(self, browser):
         browser.open(url_sms)
-        print(browser.geturl())
+        self._log.debug("Bouygues_sms-web: {0}".format(browser.geturl()))
         for x in browser.forms():
-        	print(x)
+        	self._log.debug("    Bouygues_sms-web: {0}".format(x))
         browser.select_form(name='code')
         browser['j_username'] = self.params['login']
         browser['j_password'] = self.params['pwd']
@@ -62,16 +62,13 @@ class Bouygues_sms(BaseClientService):
         return 1
 
     def send_sms(self, to, body, browser):
-        print(u"sms_send : entrée")
         if self.phone_regex.match(to) is None:
-            return {'status': u'SMS not sended', 'error': 'Sms format to is bad.'}
-        if self.phone_regex.match(self.to) is None:
-            return {'status': u'SMS not sended', 'error': 'Sms format phone is bad.'}
+            return {'status': u'SMS not sended', 'error': 'Sms format phone {0} is bad.'.format(to)}
 
         browser.open(url_sms2)
-        print(u"sms_send : formulaire sms")
+        self._log.debug(u"Bouygues_sms-web, sms_send : formulaire sms")
         for x in browser.forms():
-                print(x)
+                self._log.debug("Bouygues_sms-web: {0}".format(x))
         browser.select_form(nr=0)
         browser['fieldMsisdn'] = to
         browser['fieldMessage'] = body.encode('utf-8')
@@ -97,15 +94,14 @@ class Bouygues_sms(BaseClientService):
 
         cj = cookielib.LWPCookieJar()
         br.set_cookiejar(cj)
-        print(u"function Sms Send : before portail_login")
+        self._log.debug(u"Bouygues_sms-web, function Sms Send : before portail_login : {0}".formate(message))
         if self.portail_login(br):
-            print(u"function Sms Send : between portail_login and send_sms")
             msg = message['header'] + ': ' if message['header'] else ''
             if 'title' in message : msg = msg + u' ** ' + message['title'] + u' ** '
             msg = msg + message['body']
             result = self.send_sms(message['to'], msg, br)
-            print("function Sms Send : after send_sms")
+            self._log.debug("Bouygues_sms-web, function Sms Send : after send_sms. {0}".format(result))
         else:
-            print("function portail_login : error")
+            self._log.debug("Bouygues_sms-web, function portail_login : error")
             result = {'status': 'SMS not sended', 'error': 'Portail login error.'}
         return result

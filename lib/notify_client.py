@@ -114,12 +114,10 @@ class NotifyClient :
         commands = {}
         if self._dmgDevice :
             for cmd in self._dmgDevice['commands']:
-                print cmd
                 commands[cmd] = {'parameters': self._dmgDevice['commands'][cmd]['parameters'],
                                  'id': self._dmgDevice['commands'][cmd]['id']}
         else :
             self._log.warning(u"Can't get domogik commands. Client {0} have not domogik device registered.".format(self.name))
-        print "commands : ",  commands
         return commands
 
     def getDmgSensors(self):
@@ -131,7 +129,6 @@ class NotifyClient :
                                             'id': self._dmgDevice['sensors'][sensor]['id']}
         else :
             self._log.warning(u"Can't get domogik sensors. Client {0} have not domogik device registered.".format(self.name))
-        print "sensors : ",  sensors
         return sensors
 
     def NotifyConnection(self):

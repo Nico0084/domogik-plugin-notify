@@ -33,7 +33,7 @@ Implements
 - SMS Web service manager
 
 @author: Nico <nico84dev@gmail.com>
-@copyright: (C) 2013-2014 Domogik project
+@copyright: (C) 2013-2016 Domogik project
 @license: GPL(v3)
 @organization: Domogik
 """
@@ -52,12 +52,10 @@ except ImportError as exc :
     logging.basicConfig(filename='/var/log/domogik/notify_start_error.log',level=logging.DEBUG)
     log = logging.getLogger('NotifyManager_start_error')
     err = u"Error: Plugin Starting failed to import module ({})".format(exc)
-    print err
     logging.error(err)
-    print log
 
 class NotifyManager(Plugin):
-    """ Envois et recois des codes xPL des notifications
+    """ Main class running at plugin start
     """
 
     def __init__(self):
@@ -81,7 +79,6 @@ class NotifyManager(Plugin):
             except:
                 self.log.error(traceback.format_exc())
         self.add_stop_cb(self.managerClients.stop)
-        print "Plugin ready :)"
         self.log.info("Plugin ready :)")
         if self.get_config("send_at_start") : self.managerClients.NotifyClientsConnection()
         self.ready()
@@ -99,7 +96,6 @@ class NotifyManager(Plugin):
 
     def refreshDevices(self, max_attempt = 2):
         self.devices = self.get_device_list(quit_if_no_device = False, max_attempt = 2)
-        print "*****",  self.devices
         if self.devices :
             self.log.debug(u"Device list refreshed: {0}".format(self.devices))
             if self.managerClients is not None : self.managerClients.checkClientsRegistered(self.devices)
@@ -109,11 +105,9 @@ class NotifyManager(Plugin):
             self.log.error(u"Can't retrieve the device list, MQ no response, try again or restart plugin.")
 
     def _getDmgDevice(self, to):
-        """Return the domogik device if exist else None.
-            return the device for network (list)
-            return list of devices for node
-            return the device for value (instance) (list)"""
-        print (u"--- Search dmg device for : {0}".format(to))
+        """Return the domogik device if there is a correspondence with <to< param, else None.
+        """
+        self.log.debug(u"Search dmg device for : {0}".format(to))
         dmgDevices = []
         for dmgDevice in self.devices :
             if 'to' in dmgDevice['parameters']:
@@ -126,7 +120,6 @@ class NotifyManager(Plugin):
 
     def on_message(self, msgid, content):
         """Handle pub message from MQ"""
-        print u"New pub message {0}, {1}".format(msgid, content)
         if msgid == "device.update":
             self.log.debug(u"New pub message {0}, {1}".format(msgid, content))
             self.threadingRefreshDevices()

@@ -27,7 +27,7 @@ This is an upgrade based on sms plugin for domogik 0.3
 @author: Gizmo - Guillaume MORLET <contact@gizmo-network.fr>
 
 Implements
-========
+==========
 
 - Class Orange_sms
 
@@ -60,7 +60,7 @@ class Orange_sms(BaseClientService):
 
     def portail_login(self,browser):
         browser.open(url_sms)
-        print(browser.geturl())
+        self._log.debug("Orange_sms-web: {0}".format(browser.geturl()))
         if self.is_on_page(browser.geturl(),url_verif_auth):
             post_data = {"credential" : str(self.params['login']),
                            "pwd" : str(self.params['pwd']),
@@ -82,9 +82,7 @@ class Orange_sms(BaseClientService):
 
     def send_sms(self, to, body, browser):
         if self.phone_regex.match(to) is None:
-            return {'status': u'SMS not sended', 'error': 'Sms format to is bad.'}
-        if self.phone_regex.match(self.to) is None:
-            return {'status': u'SMS not sended', 'error': 'Sms format phone is bad.'}
+            return {'status': u'SMS not sended', 'error': 'Sms format phone {0} is bad.'.format(to)}
 
         browser.open(url_sms)
         if self.is_on_page(browser.geturl(),url_verif_sms):
@@ -135,14 +133,14 @@ class Orange_sms(BaseClientService):
 
         cj = cookielib.LWPCookieJar()
         br.set_cookiejar(cj)
-        print(u"function Sms Send : before portail_login")
+        self._log.debug(u"Orange_sms-web, function Sms Send : before portail_login : {0}".formate(message))
         if self.portail_login(br):
-            print(u"function Sms Send : between portail_login and send_sms")
             msg = message['header'] + u': ' if message['header'] else u''
             if 'title' in message : msg = msg + u' ** ' + message['title'] + u' ** '
             msg = msg + message['body']
             result = self.send_sms(message['to'], msg, br)
-            print(u"function Sms Send : after send_sms")
+            self._log.debug("Orange_sms-web, function Sms Send : after send_sms. {0}".format(result))
         else:
-           result = {'status': u'SMS not sended', 'error': u'Portail login error.'}
+            self._log.debug("Bouygues_sms-web, function portail_login : error")
+            result = {'status': u'SMS not sended', 'error': u'Portail login error.'}
         return result

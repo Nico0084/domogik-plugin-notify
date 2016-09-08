@@ -46,7 +46,6 @@ class NotifyClientsManager :
             return False
         else:
             params = GetDeviceParams(self.Plugin, instance)
-            print (params)
             if params :
                 if params['operator'] in OPERATORS_SERVICE :
                     self.clients[name] = NotifyClient(self, instance, params, self.Plugin.log)

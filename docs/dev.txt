@@ -20,7 +20,7 @@ Existing clients service.
 
 - Sending SMS WEB:
    Send SMS using web service phone operator, actually there is 4 french operators handled :
-   Can use just xPL optional value ``title``
+   Can use just optional value ``title``
 
     - Bouygues Telecom : file ``bin/smsweb_bouygues.py`` who use web service on
         http://www.mobile.service.bbox.bouyguestelecom.fr/services/SMSIHD/sendSMS.phtm
@@ -36,17 +36,17 @@ Existing clients service.
 
 - Sending Newtifry for Android:
    Send notification using web service phone `Newtifry API <https://newtifry.appspot.com/page/api>`_
-   Can use all xPL optional value ``title``, ``priority``, ``url``, ``image``
+   Can use all optional value ``title``, ``priority``, ``url``, ``image``
 
 Developing new notification service
 ==========================================
 
-TODO : Check doc to use with non-xpl revision. 
+Plugin offer way to add new client service.
 
-Plugin offer way to add new client service
+3 step are needed.
 
-Editin JSON file plugin
-***********************
+1 - Editin JSON file plugin
+***************************
 
 Some adding must be necessary to do in info.json file:
 
@@ -61,7 +61,7 @@ Some adding must be necessary to do in info.json file:
             "sensors" : ["msg_status", "error_send"],
             "parameters" : [{
                     "key" : "to",
-					"xpl": true,
+					"xpl": false,
                     "description" : "Phone number to send SMS.",
                     "type" : "string"
                 },{
@@ -100,8 +100,8 @@ Some adding must be necessary to do in info.json file:
             "commands" : ["send_extendmsg or send_msg"], # chose type of message
             "sensors" : ["msg_status", "error_send"],
             "parameters" : [{
-                    "key" : "to",                        # keep this key, identification of recipient
-					"xpl": true,
+                    "key" : "to",                       # keep this key, identification of recipient
+					"xpl": false,                       # set to false for don't use in xPL message
                     "description" : "A simple description of recipient.",
                     "type" : "string"
                 },{
@@ -121,8 +121,8 @@ Some adding must be necessary to do in info.json file:
         }
     },
 
-Editing clients_devices.py file
-*******************************
+2 - Editing clients_devices.py file
+***********************************
 
 File ``lib/clients_devices.py`` contains a ``BaseClientService`` python class who handle basic methodes.
 You create a new class inherit this base class and overwriting some methodes to get acces of this new service or hardware.
@@ -136,10 +136,10 @@ There is 3 thinks to do in this file :
     OPERATORS_SERVICE =  ['SFR_sms-web', 'Orange_sms-web', 'Bouygues_sms-web', 'Freemobile_sms-web', 'Newtifry', My_NEW_OPERATOR]
 
 
-- 2nd : You have to add new client device class reference in ``createDevice`` methode. ::
+- 2nd : You have to add new client device class reference in ``CreateOperator`` methode. ::
 
-    def createDevice(params, log = None):
-        """ Create a device depending of 'driver.name' given by data dict.
+    def CreateOperator(params, log = None):
+        """ Create a device depending of operator, use instance class to get parameters.
             - Developer : add your python class derived from DeviceBase class."""
         ....
         elif params['operator'] == 'My_new_service' :
@@ -149,33 +149,45 @@ There is 3 thinks to do in this file :
 
 - 3rd : If you have ceated a new instance_type, you have to add new client getting specifique parameters in ``GetDeviceParams`` methode. ::
 
-    def GetDeviceParams(xplPlugin, device):
+    def GetDeviceParams(Plugin, device):
         """ Return all internal parameters depending of instance_type.
             - Developer : add your instance_type proper parameters
-                @param xplPlugin : XplPlugin base class reference for "get_parameter" and "get_parameter_for_feature"" methods access.
-                    type : object class XplPlugin
+                @param Plugin : Plugin base class reference for "get_parameter" methods access.
+                    type : object class Plugin
                 @param device :  domogik device data.
                     type : dict
                 @return : parameters for creating or update ClientService object.
                         Value must contain at least keys :
                             - 'operator' = Selected from OPERATORS_SERVICE
-                            - 'to' = Client reference, the same as xPL key 'to'
+                            - 'to' = Client reference, the same as global parameter 'to'
                     type : dict
         """
         ...
         elif device['device_type_id'] == 'newtifry.device':
             operator = 'My_NEW_OPERATOR'
-            id = xplPlugin.get_parameter_for_feature(device, 'xpl_stats',  'xPL_ack-msg',  'to')  # keep this line
-            valueKey1 = xplPlugin.get_parameter(device, 'key1')                                   # Get your new device paramaters
-            valuekey2 = xplPlugin.get_parameter(device, 'key2')                                   # Get your new device paramaters
-            if operator and device["name"] and id and key1 :                                      # check for none optional parameters
+            id = device['parameters']['to']['value']                                              # keep this line
+            valueKey1 = device['parameters']['Key1']['value']                                     # Get your new device paramaters
+            valuekey2 = device['parameters']['Key2']['value']                                     # Get your new device paramaters
+            valuekey3 = Plugin.get_parameter(device, 'defaulttitle')                              # Get a Plugin config paramaters if needed
+            if operator and device["name"] and id and valueKey1 and valuekey3:                    # check for none optional parameters
                     # Build a dict with parameters
-                params = {'name': device["name"] , 'operator' : operator, 'to' : id, 'key1' : valueKey1, key2 : valuekey2}
+                params = {'name': device["name"] , 'operator' : operator, 'to' : id, 'key1' : valueKey1, 'key2' : valuekey2, 'key3' : valuekey3}
                 return params                                                                       # return your own parameters
         ...
 
 Creating new client class
 *************************
+
+In a new python file place in lib :
+
+- Import BaseClientService from plugin lib
+
+::
+
+    from client_devices import BaseClientService
+
+- Create your python class
+
 ::
 
     class My_New_Client(BaseClientService):  # simply new class declaration
@@ -186,20 +198,19 @@ Overwrite ``update`` methode
 ****************************
 This method is called by plugin to update proper parameters, so set your own parameters in::
 
-    def update(self,  params):
-        """ Create or update internal data, must be overwrited.
-            @param params :  domogik type. Come from GetInstanceParams method.
+    def update(self, params):
+        """ Create or update internal data, must be overwrited if others params needed.
+            @param params :  parameters from GetDeviceParams() of domogik device'.
                 type : dict
-            @param get_parameter : XplPlugin.get_parameter method.
-                type : methode (device, key)
         """
-        self.to = params['to']                # keep this line
-        self.key1 = params['key1']            # your parameter
-        self.key2 = params['key2'] if 'key2' in params else None # your parameter
+        BaseClientService.update(self, params)                    # keep this line to call basic method
+        self.key1 = params['key1']                                # your parameter
+        self.key2 = params['key2'] if 'key2' in params else None  # your parameter
 
 Overwrite ``send`` methode
 ****************************
 This method is called by plugin for sending message on service, She must return a dict with format :
+use self._log to log message in plugin log.
 
 ::
 
@@ -221,8 +232,14 @@ This method is called by plugin for sending message on service, She must return 
         """
         ...
         # write your own code for format message and send it.
+        # using try / except should avoid failling plugin
+        try :
+          ...
+        except :
+            result = {'status': u"Message not sended", 'error':  u"Bad message format : {0}".format(message)}
+            self._log.warning(u"{0} Message <{1}> not sended. {2}".format(self.to, message, traceback.format_exc()))  # use traceback in lo
         ...
         if message_Is_Sended : return {'status': 'Message sended :)', 'error': ''}
-        else return {'status': 'Message not sended :(', 'error': 'Server nor response .....'}
+        else return {'status': 'Message not sended :(', 'error': 'Server not response .....'}
 
 

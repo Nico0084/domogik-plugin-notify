@@ -33,14 +33,15 @@ Implements
 - class BaseClientService to handle Operators
 
 @author: Nico <nico84dev@gmail.com>
-@copyright: (C) 2007-2014 Domogik project
+@copyright: (C) 2007-2016 Domogik project
 @license: GPL(v3)
 @organization: Domogik
 """
+
 OPERATORS_SERVICE =  ['SFR_sms-web', 'Orange_sms-web', 'Bouygues_sms-web', 'Freemobile_sms-web', 'Newtifry']
 
 def CreateOperator(params, log = None):
-    """ Create a device depending of operator, use instance for get parameters.
+    """ Create a device depending of operator, use instance class to get parameters.
         - Developer : add your python class derived from DeviceBase class."""
     newOperator = None
     if params['operator'] == 'SFR_sms-web' :
@@ -63,17 +64,17 @@ def CreateOperator(params, log = None):
 def GetDeviceParams(Plugin, device):
     """ Return all internal parameters depending of instance_type.
         - Developer : add your instance_type proper parameters
-            @param Plugin : Plugin base class reference for "get_parameter" and "get_parameter_for_feature"" methods access.
+            @param Plugin : Plugin base class reference for "get_parameter" methods access.
                 type : object class Plugin
             @param device :  domogik device data.
                 type : dict
             @return : parameters for creating or update ClientService object.
                     Value must contain at least keys :
                         - 'operator' = Selected from OPERATORS_SERVICE
-                        - 'to' = Client reference, the same as xPL key 'to'
+                        - 'to' = Client reference, the same as global parameter 'to'
                 type : dict
     """
-    print (u"Extract parameters from device : \n{0}".format(device))
+    print(u"Extract parameters from device : \n{0}".format(device))
     if device['device_type_id'] == 'notify.smsweb':
         operator = device['parameters']['operator']['value']
         id = device['parameters']['to']['value']
@@ -89,14 +90,14 @@ def GetDeviceParams(Plugin, device):
         sourcekey = device['parameters']['sourcekey']['value']
         defaulttitle = Plugin.get_parameter(device, 'defaulttitle')
         if operator and device["name"] and id and sourcekey :
-            params = {'name': device["name"] , 'operator' : operator, 'to' : id, 'sourcekey' : sourcekey, 'backend': backend,'defaulttitle' : defaulttitle}
+            params = {'name': device["name"] , 'operator' : operator, 'to' : id, 'sourcekey' : sourcekey, 'backend': backend, 'defaulttitle' : defaulttitle}
             return params
     return None
 
 class BaseClientService():
     """ Basic Class for operator functionnalities.
-        - Developper : Use on inherite class to impllement new operator class
-                Overwrite  methods to handle xpl event."""
+        - Developper : Use on inherite class to implement new operator class
+                Overwrite  methods to handle event."""
 
     def __init__(self, params, log):
         """ Must be called and overwrited with operator parameters.

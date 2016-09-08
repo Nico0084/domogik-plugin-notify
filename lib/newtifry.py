@@ -48,7 +48,7 @@ class Newtifry(BaseClientService):
     """ Notification Control for Newtifry web service
     """
     def update(self, params):
-        """ Overwrited od BaseClientService class for extra parameters.
+        """ Overwrited of BaseClientService class for extra parameters.
             @param params :  parameters from GetDeviceParams() of domogik device.
                 type : dict
         """
@@ -60,20 +60,18 @@ class Newtifry(BaseClientService):
     def send_msg(self, message):
         backend = BACKEND_NEWTIFRY if self.backend == None else self.backend
         request =  urllib.urlencode(message)
-        print (u"send_msg : {0}".format(request))
+        self._log.debug("Orange_sms-web, send_msg : {0}".format(request))
         try:
             response = urllib2.urlopen(backend, request)    # This request is sent in HTTP POST
             # Read the body.
             body = response.read()
             # It's JSON - parse it.
             contents = json.loads(body)
-            print (contents)
             if contents.has_key('error'):
                 return {'status': u'Message not sended', 'error': "Server did not accept our message: {0}".format(contents['error'])}
             else:
                 return {'status': u'Message sended. Size: {0}.'.format( contents['size']), 'error': u''}
         except urllib2.URLError, e:
-            print (u"failed : {0}".format(e))
             return {'status': u'Message not sended', 'error':  format(e)}
 
     def send(self, message):
@@ -94,7 +92,6 @@ class Newtifry(BaseClientService):
             if 'url' in message : msg['url'] = message['url']
             if 'image' in message : msg['image'] = message['image']
             result = self.send_msg(msg)
-            print(result)
         except :
             result = {'status': u"Message not sended", 'error':  u"Bad message format : {0}".format(message)}
             self._log.warning(u"{0} Message <{1}> not sended. {2}".format(self.to, message, traceback.format_exc()))
