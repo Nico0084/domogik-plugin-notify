@@ -40,6 +40,8 @@ Implements
 import mechanize
 import cookielib
 import re
+import traceback
+
 from domogik_packages.plugin_notify.lib.client_devices import BaseClientService
 
 url_sms = "http://www.espaceclient.bouyguestelecom.fr/ECF/jsf/client/envoiSMS/viewEnvoiSMS.jsf"
@@ -70,10 +72,16 @@ class Bouygues_sms(BaseClientService):
         for x in browser.forms():
                 self._log.debug("Bouygues_sms-web: {0}".format(x))
         browser.select_form(nr=0)
-        browser['fieldMsisdn'] = to
-        browser['fieldMessage'] = body.encode('utf-8')
-        browser.submit()
-        return {'status': u'SMS sended', 'error': u''}
+        try:
+            browser['fieldMsisdn'] = to
+            browser['fieldMessage'] = body.encode('utf-8')
+            browser.submit()
+            return {'status': u'SMS sended', 'error': u''}
+        except :
+            error = traceback.format_exc()
+            if self._log : self._log.error(u"Bouygues_sms-web sms send failed : {0}".format(error))
+            return {'status': u'SMS not sended', 'error': u"SMS send failed : {0}".format(error)}
+
 
     def send(self, message):
         """ Send Sms

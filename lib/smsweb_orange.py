@@ -44,6 +44,7 @@ import mechanize
 import cookielib
 import urllib
 import re
+import traceback
 from domogik_packages.plugin_notify.lib.client_devices import BaseClientService
 
 url_sms = "http://smsmms1.orange.fr/C/Sms/sms_write.php"
@@ -98,19 +99,23 @@ class Orange_sms(BaseClientService):
             browser.new_control("textarea", "msg", {'value':''})
 
             browser.set_all_readonly(False)
-
-            browser["corpsms"] = body
-            browser["pays"] = "33"
-            browser["listetel"] = listetel
-            browser["reply"] = "2"
-            browser["typesms"] = "2"
-            browser["produit"] = "1000"
-            browser["destToKeep"] = listetel
-            browser["NUMTEL"] = sender
-            browser["autorize"] = "1"
-            browser["msg"] = body.encode('utf-8')
-            browser.submit()
-            return {'status': 'SMS sended', 'error': ''}
+            try :
+                browser["corpsms"] = body.encode('utf-8')
+                browser["pays"] = "33"
+                browser["listetel"] = listetel
+                browser["reply"] = "2"
+                browser["typesms"] = "2"
+                browser["produit"] = "1000"
+                browser["destToKeep"] = listetel
+                browser["NUMTEL"] = sender
+                browser["autorize"] = "1"
+                browser["msg"] = body.encode('utf-8')
+                browser.submit()
+                return {'status': 'SMS sended', 'error': ''}
+            except :
+                error = traceback.format_exc()
+                if self._log : self._log.error(u"Orange_sms-web sms send failed : {0}".format(error))
+                return {'status': u'SMS not sended', 'error': u"SMS send failed : {0}".format(error)}
         else:
             return {'status': u'SMS not sended', 'error': 'SMS Error Compose and Send.'}
 

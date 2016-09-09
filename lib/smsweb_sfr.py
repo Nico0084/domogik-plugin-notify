@@ -40,6 +40,8 @@ Implements
 import mechanize
 import cookielib
 import re
+import traceback
+
 from domogik_packages.plugin_notify.lib.client_devices import BaseClientService
 
 url_sms = "http://www.sfr.fr/xmscomposer/index.html?todo=compose"
@@ -72,14 +74,20 @@ class SFR_sms(BaseClientService):
         for x in browser.forms():
         	self._log.debug("    SFR_sms-web: {0}".format(x))
         browser.select_form(nr=0)
-        browser['msisdns'] = to
-        browser['textMessage'] = body.encode('utf-8')
-        browser.submit()
-        for x in browser.forms():
-        	self._log.debug("    SFR_sms-web: {0}".format(x))
-        browser.select_form(nr=0)
-        browser.submit()
-        return {'status': u'SMS sended', 'error': ''}
+        try:
+            browser['msisdns'] = to
+            browser['textMessage'] = body.encode('utf-8')
+            browser.submit()
+            for x in browser.forms():
+                self._log.debug("    SFR_sms-web: {0}".format(x))
+            browser.select_form(nr=0)
+            browser.submit()
+            return {'status': u'SMS sended', 'error': ''}
+        except :
+            error = traceback.format_exc()
+            if self._log : self._log.error(u"Orange_sms-web sms send failed : {0}".format(error))
+            return {'status': u'SMS not sended', 'error': u"SMS send failed : {0}".format(error)}
+
 
     def send(self, message):
         """ Send Sms

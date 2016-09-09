@@ -38,6 +38,7 @@ Implements
 """
 
 import urllib,urllib2
+import traceback
 from domogik_packages.plugin_notify.lib.client_devices import BaseClientService
 #from client_devices import BaseClientService
 
@@ -48,9 +49,14 @@ class Freemobile_sms(BaseClientService):
     """
 
     def send_sms(self, to, body):
-        data = urllib.urlencode({'user' : self.params['login']})
-        data += "&"+ urllib.urlencode({'pass': self.params['pwd']})
-        data += "&"+ urllib.urlencode({'msg' : u"{0}".format(body)})
+        try:
+            data = urllib.urlencode({'user' : self.params['login']})
+            data += "&"+ urllib.urlencode({'pass': self.params['pwd']})
+            data += "&"+ urllib.urlencode({'msg' : body.encode('utf-8')})
+        except :
+            error = traceback.format_exc()
+            if self._log : self._log.error(u"Freemobile sms send failed : {0}".format(error))
+            return {'status': u'SMS not sended', 'error': u"SMS send failed : {0}".format(error)}
         request = url_sms + data
         error = u''
         try:
@@ -74,8 +80,8 @@ class Freemobile_sms(BaseClientService):
             elif codeResult == 500 : error = u'Server side error. Please try again later.'      # Erreur côté serveur. Veuillez réessayez ultérieurement.
             else : error = u'Unknown error.'
         if error != '' :
-            return {'status': u'SMS not sended', 'error': error}
             if self._log : self._log.error(u"Freemobile sms send failed : {0}, {1}".format(e,  error))
+            return {'status': u'SMS not sended', 'error': error}
         else :
             if self._log : self._log.info(u"Freemobile sms sended.")
             return {'status': u'SMS sended', u'error': error}

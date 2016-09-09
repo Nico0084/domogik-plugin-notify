@@ -59,8 +59,13 @@ class Newtifry(BaseClientService):
 
     def send_msg(self, message):
         backend = BACKEND_NEWTIFRY if self.backend == None else self.backend
-        request =  urllib.urlencode(message)
-        self._log.debug("Orange_sms-web, send_msg : {0}".format(request))
+        try:
+            request =  urllib.urlencode(message)
+        except :
+            error = traceback.format_exc()
+            if self._log : self._log.error(u"Newtifry message send failed : {0}".format(error))
+            return {'status': u'Message not sended', 'error': u"Message send failed : {0}".format(error)}
+        self._log.debug("Newtifry, send_msg : {0}".format(request))
         try:
             response = urllib2.urlopen(backend, request)    # This request is sent in HTTP POST
             # Read the body.
@@ -84,15 +89,15 @@ class Newtifry(BaseClientService):
             @return : dict = {'status' : <Status info>, 'error' : <Error Message>}
         """
         try :
-            msg = {'format' : 'json',  'source': self.sourcekey, 'title': u'Notification', 'message': message['body']}
-            if 'title' in message : msg['title'] = message['title']
-            elif self.defaulttitle : msg['title'] = self.defaulttitle
+            msg = {'format' : 'json',  'source': self.sourcekey, 'title': u'Notification', 'message': message['body'].encode('utf-8')}
+            if 'title' in message : msg['title'] = message['title'].encode('utf-8')
+            elif self.defaulttitle : msg['title'] = self.defaulttitle.encode('utf-8')
             # optional parameters
             if 'priority' in message : msg['priority'] = int(float(message['priority']))
-            if 'url' in message : msg['url'] = message['url']
-            if 'image' in message : msg['image'] = message['image']
+            if 'url' in message : msg['url'] = message['url'].encode('utf-8')
+            if 'image' in message : msg['image'] = message['image'].encode('utf-8')
             result = self.send_msg(msg)
         except :
             result = {'status': u"Message not sended", 'error':  u"Bad message format : {0}".format(message)}
-            self._log.warning(u"{0} Message <{1}> not sended. {2}".format(self.to, message, traceback.format_exc()))
+            self._log.warning(u"Newtifry : {0} Message <{1}> not sended. {2}".format(self.to, message, traceback.format_exc()))
         return result
