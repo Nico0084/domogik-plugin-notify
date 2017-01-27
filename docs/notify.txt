@@ -21,9 +21,7 @@ Purpose
 =======
 This Domogik plugin send notification message through services that could SMS (from web), `Newtifry for Android <http://www.networkupstools.org/>`_.
 
-Create a socket connection with NUT to get UPS informations and format them to xPL format according to `xPL_project <http://xplproject.org.uk/wiki/index.php/Schema_-_SENDMSG.BASIC>`_ specifications.
-
-Sensors values for ack sended notification send to domogik device.
+Used with scenario could inform you of house event.
 
 Offer a simply class developpement to add service.
  
