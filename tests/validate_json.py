@@ -5,21 +5,13 @@
 plugin = "notify"
 ########################################################
 
-import json
-import sys
-import os
 from domogik.common.packagejson import PackageJson
 
-json_file = "/var/lib/domogik/domogik_packages/plugin_{0}/info.json".format(plugin)
-if os.path.exists(json_file) :
-    json_file = os.path.realpath(json_file)
-    data = json.load(open(json_file))
-    print data
-    print "Package validation ..."
-    p = PackageJson(path=json_file)
-    if p.validate() == False :
-        print "*** Error json validation :{0}".format(json_file)
-    else :
-        print "Json is validate :{0}".format(json_file)
+print(u"Package validation ...")
+p = PackageJson(name=plugin, pkg_type = "plugin")
+print(p.json)
+print(u"****************************************************")
+if p.validate() == False :
+    print(u"*** Error json validation for plugin : {0}".format(plugin))
 else :
-    print "*** Error *** Don't find file :{0}".format(json_file)
+    print(u"Json is validate for plugin : {0}".format(plugin))
