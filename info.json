@@ -172,7 +172,7 @@
         "domogik_min_version" : "0.5.0",
         "name" : "notify",
          "type" : "plugin",
-        "version" : "0.3.1"
+        "version" : "0.3.2"
     },
     "json_version" : 2
 }
