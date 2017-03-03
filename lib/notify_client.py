@@ -54,7 +54,7 @@ class NotifyClientException(Exception):
 def getClientId(device):
     """Return key Notify client id."""
     if device.has_key('name') and device.has_key('id'):
-        return "{0}_{1}".format(device['name'], device['id'])
+        return u"{0}_{1}".format(device['name'], device['id'])
     else : return None
 
 class NotifyClient :
