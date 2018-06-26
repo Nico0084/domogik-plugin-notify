@@ -26,6 +26,13 @@
             "name": "send message at start up",
             "required": "no",
             "type": "boolean"
+        },{
+            "default": false,
+            "description": "Send a notification message to all notify clients at stop plugin.",
+            "key": "send_at_stop",
+            "name": "send message at stop",
+            "required": "no",
+            "type": "boolean"
         }],
     "xpl_commands" : {},
     "xpl_stats": {},

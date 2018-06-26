@@ -81,7 +81,8 @@ class NotifyClient :
 
     def close(self):
         """Close operator."""
-        self.handle_cmd({"to": self.to, "title": "Disconnection" , "body": "Your Terminal is disconnect, it will no longer receive notifications."})
+        if self._manager.getStopConfig() :
+            self.handle_cmd({"to": self.to, "title": "Disconnection" , "body": "Your Terminal is disconnect, it will no longer receive notifications."})
         self._operator.close()
         self._log.info(u"Close notification client {0} and his operator {1}".format(self.name, self.operator))
 
