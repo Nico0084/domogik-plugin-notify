@@ -89,6 +89,10 @@ class NotifyManager(Plugin):
         del self.managerClients
         self.managerClients = None
 
+    def getStopConfig(self):
+        """Return <Send message at stop> config option"""
+        return self.get_config("send_at_stop")
+
     def threadingRefreshDevices(self, max_attempt = 2):
         """Call get_device_list from MQ
             could take long time, run in thread to get free process"""

@@ -38,6 +38,10 @@ class NotifyClientsManager :
         self.Plugin.log.info(u"Closing NotifyManager.")
         for id in self.clients : self.clients[id].close()
 
+    def getStopConfig(self):
+        """Return <Send message at stop> config option"""
+        return self.Plugin.getStopConfig()
+
     def addClient(self, instance):
         """Add a Notify from domogik instance"""
         name = getClientId(instance)

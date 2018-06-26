@@ -40,9 +40,15 @@ Implements
 import urllib,urllib2
 import traceback
 from domogik_packages.plugin_notify.lib.client_devices import BaseClientService
-#from client_devices import BaseClientService
 
 url_sms = "https://smsapi.free-mobile.fr/sendmsg?"
+
+# ************* Fix UrlLib2 ssl CERTIFICATE_VERIFY_FAILED error 590
+import os, ssl
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+    getattr(ssl, '_create_unverified_context', None)):
+    ssl._create_default_https_context = ssl._create_unverified_context
+# ************* End fix
 
 class Freemobile_sms(BaseClientService):
     """ Sms Control for Freemobile operator
@@ -54,22 +60,27 @@ class Freemobile_sms(BaseClientService):
             data += "&"+ urllib.urlencode({'pass': self.params['pwd']})
             data += "&"+ urllib.urlencode({'msg' : body.encode('utf-8')})
         except :
-            error = traceback.format_exc()
-            if self._log : self._log.error(u"Freemobile sms send failed : {0}".format(error))
-            return {'status': u'SMS not sended', 'error': u"SMS send failed : {0}".format(error)}
+            if self._log : self._log.error(u"Freemobile sms send failed : {0}".format(traceback.format_exc()))
+            return {'status': u'SMS not sended', 'error': u"Url encode error, check log"}
         request = url_sms + data
         error = u''
         try:
-            response = urllib2.urlopen(request)    # This request is sent in HTTP POST
-        except IOError, e:
-            codeResult = e.code
-            if codeResult == 400 : error = u'A mandatory parameter is missing'   #Un des paramètres obligatoires est manquant.
-            elif codeResult == 402 : error = u'Too many SMS were sent in too little time.'      # Trop de SMS ont été envoyés en trop peu de temps.
-            elif codeResult == 403 : error = u'The service is not enabled on the subscriber area, or login / incorrect key.'      # Le service n’est pas activé sur l’espace abonné, ou login / clé incorrect.
-            elif codeResult == 500 : error = u'Server side error. Please try again later.'      # Erreur côté serveur. Veuillez réessayez ultérieurement.
-            else : error = format(e)
-            if self._log : self._log.error(u"Freemobile sms send failed : {0}, {1}".format(e,  error))
+            response = urllib2.urlopen(request)  # This request is sent in HTTP POST
+        except urllib2.HTTPError as e:
+            if e.code == 400 : error = u'A mandatory parameter is missing'   # Un des paramètres obligatoires est manquant.
+            elif e.code == 402 : error = u'Too many SMS were sent in too little time.'      # Trop de SMS ont été envoyés en trop peu de temps.
+            elif e.code == 403 : error = u'The service is not enabled on the subscriber area, or login / incorrect key.'      # Le service n’est pas activé sur l’espace abonné, ou login / clé incorrect.
+            elif e.code == 500 : error = u'Server side error. Please try again later.'      # Erreur côté serveur. Veuillez réessayez ultérieurement.
+            else :
+                error = u"{0}".format(e)
+            if self._log : self._log.error(u"Freemobile sms send failed : {0}, {1}".format(e, traceback.format_exc()))
             return {'status': u'SMS not sended', 'error': error}
+        except urllib2.URLError as e:
+            if self._log : self._log.error(u"Freemobile sms send failed : {0}, {1}".format(e, traceback.format_exc()))
+            return {'status': u'SMS not sended', 'error': u"{0}".format(e)}
+        except :
+            if self._log : self._log.error(u"Freemobile sms send failed : {0}".format(traceback.format_exc()))
+            return {'status': u'SMS not sended', 'error': 'Internal Error, check log'}
         else :
             codeResult = response.getcode()
             response.close()
@@ -80,7 +91,7 @@ class Freemobile_sms(BaseClientService):
             elif codeResult == 500 : error = u'Server side error. Please try again later.'      # Erreur côté serveur. Veuillez réessayez ultérieurement.
             else : error = u'Unknown error.'
         if error != '' :
-            if self._log : self._log.error(u"Freemobile sms send failed : {0}, {1}".format(e,  error))
+            if self._log : self._log.error(u"Freemobile sms send failed : {0}".format(error))
             return {'status': u'SMS not sended', 'error': error}
         else :
             if self._log : self._log.info(u"Freemobile sms sended.")
