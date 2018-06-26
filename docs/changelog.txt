@@ -1,6 +1,14 @@
 =========
 Changelog
 
+0.3.2
+=====
+
+* Freemobile sms service :
+  - Fix UrlLib2 ssl CERTIFICATE_VERIFY_FAILED error 590, due to python lib update (2018 june)
+  - Improve Error connection service.
+* Fix #9 Add send at stop configuration option
+* Fix #8 Unicode for device name (log)
 
 0.3.1
 =====
